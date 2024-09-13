@@ -9,5 +9,5 @@ namespace WorkoutApi.Models.Dto
         public string Description { get; set; } = string.Empty;
         public string Category { get; set; } = string.Empty;
     }
-}
+
 }
