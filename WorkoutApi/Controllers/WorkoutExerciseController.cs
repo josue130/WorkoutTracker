@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Azure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WorkoutApi.Data;
@@ -11,25 +12,25 @@ namespace WorkoutApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class WorkoutController : ControllerBase
+    public class WorkoutExerciseController : ControllerBase
     {
         private readonly IMapper _mapper;
         private readonly AppDbContext _db;
         private readonly ResponseDto _response;
-        public WorkoutController(IMapper mapper, AppDbContext db)
+        public WorkoutExerciseController(IMapper mapper, AppDbContext db)
         {
-            _db = db;
             _mapper = mapper;
+            _db = db;
             _response = new();
         }
 
-        [HttpGet]
-        public async Task<ResponseDto> Get()
+        [HttpGet("{workoutId:int}")]
+        public async Task<ResponseDto> Get(int workoutId)
         {
             try
             {
-                IEnumerable<Workout> data = _db.workouts.ToList();
-                _response.Result = _mapper.Map<IEnumerable<WorkoutDto>>(data);
+                WorkoutExercise data = await _db.workoutExercises.FirstAsync(we => we.WorkoutId == workoutId);
+                _response.Result = _mapper.Map<WorkoutExerciseDto>(data);
             }
             catch (Exception ex)
             {
@@ -38,33 +39,16 @@ namespace WorkoutApi.Controllers
             }
             return _response;
         }
-
-        [HttpGet("{id:int}")]
-        public async Task<ResponseDto> Get(int id)
-        {
-            try
-            {
-                Workout data = await _db.workouts.FirstAsync(workout => workout.Id == id);
-                _response.Result = _mapper.Map<WorkoutDto>(data);
-            }
-            catch (Exception ex)
-            {
-                _response.IsSucces = false;
-                _response.Message = ex.Message;
-            }
-            return _response;
-        }
-        
 
         [HttpPost]
-        public async Task<ResponseDto> Post([FromBody] WorkoutDto model)
+        public async Task<ResponseDto> Post([FromBody] WorkoutExerciseDto model)
         {
             try
             {
-                Workout data = _mapper.Map<Workout>(model);
-                await _db.workouts.AddAsync(data);
+                WorkoutExercise data = _mapper.Map<WorkoutExercise>(model);
+                await _db.workoutExercises.AddAsync(data);
                 await _db.SaveChangesAsync();
-                _response.Result = _mapper.Map<WorkoutDto>(data);
+                _response.Result = _mapper.Map<WorkoutExerciseDto>(data);
             }
             catch (Exception ex)
             {
@@ -74,15 +58,16 @@ namespace WorkoutApi.Controllers
             return _response;
         }
 
+      
         [HttpPut]
-        public async Task<ResponseDto> Put([FromBody] WorkoutDto model)
+        public async Task<ResponseDto> Put([FromBody] WorkoutExerciseDto model)
         {
             try
             {
-                Workout data = _mapper.Map<Workout>(model);
-                _db.workouts.Update(data);
+                WorkoutExercise data = _mapper.Map<WorkoutExercise>(model);
+                _db.workoutExercises.Update(data);
                 await _db.SaveChangesAsync();
-                _response.Result = _mapper.Map<WorkoutDto>(data);
+                _response.Result = _mapper.Map<WorkoutExerciseDto>(data);
             }
             catch (Exception ex)
             {
@@ -91,16 +76,17 @@ namespace WorkoutApi.Controllers
             }
             return _response;
         }
+
 
         [HttpDelete("{id}")]
         public async Task<ResponseDto> Delete(int id)
         {
             try
             {
-                Workout data = _db.workouts.First(workout => workout.Id == id);
-                _db.workouts.Remove(data);
+                WorkoutExercise data = await _db.workoutExercises.FirstAsync(we => we.Id == id);
+                _db.workoutExercises.Remove(data);
                 await _db.SaveChangesAsync();
-                _response.Result = _mapper.Map<WorkoutDto>(data);
+                _response.Result = _mapper.Map<WorkoutExerciseDto>(data);
             }
             catch (Exception ex)
             {
@@ -109,6 +95,5 @@ namespace WorkoutApi.Controllers
             }
             return _response;
         }
-
     }
 }
