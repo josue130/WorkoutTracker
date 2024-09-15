@@ -72,7 +72,7 @@ namespace WorkoutApi.Controllers
             }
             return _response;
         }
-        [HttpPut("{id}")]
+        [HttpPut]
         public async Task<ResponseDto> Put([FromBody] ExerciseDto model)
         {
             try
