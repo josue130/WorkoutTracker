@@ -5,6 +5,7 @@ namespace WorkoutApi.Models.Dto
     {
         public int Id { get; set; }
         public int WorkoutId { get; set; }
-    
+        public DateTime ScheduledDate { get; set; }
+
     }
 }
