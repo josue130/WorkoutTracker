@@ -56,7 +56,38 @@ namespace WorkoutApi.Controllers
             }
             return _response;
         }
-        
+        [HttpGet("Report/{UserId:int}")]
+        public async Task<ResponseDto> GetReport(int UserId)
+        {
+            try
+            {
+                List <ReportHeaderDto> report = await _db.scheduleWorkouts
+                    .Where(sw => sw.ScheduledDate < DateTime.Now && sw.Workout.UserId == UserId)
+                    .OrderBy(sw => sw.ScheduledDate)
+                    .Select(sw => new ReportHeaderDto
+                    {
+                        WorkoutId = sw.Workout.Id,
+                        WorkoutName = sw.Workout.Name,
+                        ScheduledDate = sw.ScheduledDate,
+                        ReportDetails = sw.Workout.WorkoutExercises.Select(we => new ReportDetailsDto
+                        {
+                            ExerciseName = we.Exercise.Name,
+                            Sets = we.Sets,
+                            Repetitions = we.Repetitions,
+                            Weight = we.Weight
+                        }).ToList()
+                    })
+                    .ToListAsync();
+                _response.Result = report;
+
+            }
+            catch (Exception ex)
+            {
+                _response.IsSucces = false;
+                _response.Message = ex.Message;
+            }
+            return _response;
+        }
 
         [HttpPost]
         public async Task<ResponseDto> Post([FromBody] WorkoutDto model)

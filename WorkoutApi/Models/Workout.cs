@@ -11,6 +11,7 @@ namespace WorkoutApi.Models
         public int UserId { get; set; }
         [ForeignKey("UserId")]
         public virtual User User { get; set; } = null!;
+        public virtual ICollection<WorkoutExercise> WorkoutExercises { get; set; } = new List<WorkoutExercise>();
         
     }
 }
