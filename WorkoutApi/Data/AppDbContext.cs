@@ -13,6 +13,7 @@ namespace WorkoutApi.Data
         public DbSet<User> users { get; set; }
         public DbSet<Workout> workouts { get; set; }
         public DbSet<WorkoutExercise> workoutExercises { get; set; }
+        public DbSet<WorkoutComments> workoutComments { get; set; }
         public DbSet<ScheduleWorkout> scheduleWorkouts { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
