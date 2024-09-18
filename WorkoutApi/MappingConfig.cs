@@ -14,6 +14,7 @@ namespace WorkoutApi
                 config.CreateMap<Workout, WorkoutDto>().ReverseMap();
                 config.CreateMap<WorkoutExercise, WorkoutExerciseDto>().ReverseMap();
                 config.CreateMap<ScheduleWorkout, ScheduleWorkoutDto>().ReverseMap();
+                config.CreateMap<WorkoutComments, WorkoutCommentsDto>().ReverseMap();
             });
             return mappingConfig;
         }

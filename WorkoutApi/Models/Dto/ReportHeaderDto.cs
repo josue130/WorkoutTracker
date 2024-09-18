@@ -7,12 +7,5 @@
         public DateTime? ScheduledDate { get; set; }
         public List<ReportDetailsDto>? ReportDetails { get; set; }
 
-        /*
-        public static ReportDto FromEntity(ScheduleWorkout entity )
-        {
-
-        }
-        */
-
     }
 }
