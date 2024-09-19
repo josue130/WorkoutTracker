@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using WorkoutApi.Data;
 using WorkoutApi.Models;
 using WorkoutApi.Models.Dto;
+using WorkoutApi.Repository.IRepository;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -17,12 +18,12 @@ namespace WorkoutApi.Controllers
     public class WorkoutExerciseController : ControllerBase
     {
         private readonly IMapper _mapper;
-        private readonly AppDbContext _db;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ResponseDto _response;
-        public WorkoutExerciseController(IMapper mapper, AppDbContext db)
+        public WorkoutExerciseController(IMapper mapper, IUnitOfWork unitOfWork)
         {
             _mapper = mapper;
-            _db = db;
+            _unitOfWork = unitOfWork;
             _response = new();
         }
 
@@ -31,7 +32,8 @@ namespace WorkoutApi.Controllers
         {
             try
             {
-                WorkoutExercise data = await _db.workoutExercises.FirstAsync(we => we.WorkoutId == workoutId);
+                WorkoutExercise data = await _unitOfWork.workoutExercises.Get(we => we.WorkoutId == workoutId); 
+                 
                 _response.Result = _mapper.Map<WorkoutExerciseDto>(data);
             }
             catch (Exception ex)
@@ -48,8 +50,8 @@ namespace WorkoutApi.Controllers
             try
             {
                 WorkoutExercise data = _mapper.Map<WorkoutExercise>(model);
-                await _db.workoutExercises.AddAsync(data);
-                await _db.SaveChangesAsync();
+                await _unitOfWork.workoutExercises.Add(data);
+                await _unitOfWork.Save();
                 _response.Result = _mapper.Map<WorkoutExerciseDto>(data);
             }
             catch (Exception ex)
@@ -67,8 +69,8 @@ namespace WorkoutApi.Controllers
             try
             {
                 WorkoutExercise data = _mapper.Map<WorkoutExercise>(model);
-                _db.workoutExercises.Update(data);
-                await _db.SaveChangesAsync();
+                 _unitOfWork.workoutExercises.Update(data);
+                await _unitOfWork.Save();
                 _response.Result = _mapper.Map<WorkoutExerciseDto>(data);
             }
             catch (Exception ex)
@@ -85,9 +87,9 @@ namespace WorkoutApi.Controllers
         {
             try
             {
-                WorkoutExercise data = await _db.workoutExercises.FirstAsync(we => we.Id == id);
-                _db.workoutExercises.Remove(data);
-                await _db.SaveChangesAsync();
+                WorkoutExercise data = await _unitOfWork.workoutExercises.Get(we => we.Id == id);
+                _unitOfWork.workoutExercises.Remove(data);
+                await _unitOfWork.Save();
                 _response.Result = _mapper.Map<WorkoutExerciseDto>(data);
             }
             catch (Exception ex)

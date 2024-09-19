@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using WorkoutApi.Data;
 using WorkoutApi.Models;
 using WorkoutApi.Models.Dto;
+using WorkoutApi.Repository.IRepository;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -14,14 +15,14 @@ namespace WorkoutApi.Controllers
     public class ScheduleWorkoutController : ControllerBase
     {
         private readonly IMapper _mapper;
-        private readonly AppDbContext _db;
         private readonly ResponseDto _response;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public ScheduleWorkoutController(IMapper mapper, AppDbContext db)
+        public ScheduleWorkoutController(IMapper mapper, AppDbContext db, IUnitOfWork unitOfWork)
         {
             _mapper = mapper;
-            _db = db;
             _response = new();
+            _unitOfWork = unitOfWork;       
         }
 
 
@@ -30,11 +31,7 @@ namespace WorkoutApi.Controllers
         {
             try
             {
-                IEnumerable<ScheduleWorkout> data = await _db.scheduleWorkouts
-                     .Include(sw => sw.Workout)
-                     .Where(sw => sw.ScheduledDate >= DateTime.Now && sw.Workout.UserId == UserId)
-                     .OrderBy(sw => sw.ScheduledDate)
-                     .ToListAsync();
+                IEnumerable<ScheduleWorkout> data = await _unitOfWork.scheduleWorkouts.GetScheduleWorkouts(UserId);
                 _response.Result = _mapper.Map<IEnumerable<ScheduleWorkoutDto>>(data);
             }
             catch (Exception ex)
@@ -52,8 +49,8 @@ namespace WorkoutApi.Controllers
             try
             {
                 ScheduleWorkout data = _mapper.Map<ScheduleWorkout>(model);
-                await _db.scheduleWorkouts.AddAsync(data);
-                await _db.SaveChangesAsync();
+                await _unitOfWork.scheduleWorkouts.Add(data);
+                await _unitOfWork.Save();
                 _response.Result = _mapper.Map<ScheduleWorkoutDto>(data);
             }
             catch (Exception ex)
@@ -70,8 +67,8 @@ namespace WorkoutApi.Controllers
             try
             {
                 ScheduleWorkout data = _mapper.Map<ScheduleWorkout>(model);
-                _db.scheduleWorkouts.Update(data);
-                await _db.SaveChangesAsync();
+                _unitOfWork.scheduleWorkouts.Update(data);
+                await _unitOfWork.Save();
                 _response.Result = _mapper.Map<ScheduleWorkoutDto>(data);
             }
             catch (Exception ex)
@@ -87,9 +84,9 @@ namespace WorkoutApi.Controllers
         {
             try
             {
-                ScheduleWorkout data = _db.scheduleWorkouts.First(sw => sw.Id == id);
-                _db.scheduleWorkouts.Remove(data);
-                await _db.SaveChangesAsync();
+                ScheduleWorkout data = await _unitOfWork.scheduleWorkouts.Get(sw => sw.Id == id);
+                _unitOfWork.scheduleWorkouts.Remove(data);
+                await _unitOfWork.Save();
                 _response.Result = _mapper.Map<ScheduleWorkoutDto>(data);
             }
             catch (Exception ex)

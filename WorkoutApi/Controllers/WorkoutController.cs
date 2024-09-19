@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using WorkoutApi.Data;
 using WorkoutApi.Models;
 using WorkoutApi.Models.Dto;
+using WorkoutApi.Repository.IRepository;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -16,11 +17,11 @@ namespace WorkoutApi.Controllers
     public class WorkoutController : ControllerBase
     {
         private readonly IMapper _mapper;
-        private readonly AppDbContext _db;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ResponseDto _response;
-        public WorkoutController(IMapper mapper, AppDbContext db)
+        public WorkoutController(IMapper mapper, IUnitOfWork unitOfWork)
         {
-            _db = db;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
             _response = new();
         }
@@ -30,7 +31,7 @@ namespace WorkoutApi.Controllers
         {
             try
             {
-                IEnumerable<Workout> data = _db.workouts.ToList();
+                IEnumerable<Workout> data = await _unitOfWork.workouts.GetAll();
                 _response.Result = _mapper.Map<IEnumerable<WorkoutDto>>(data);
             }
             catch (Exception ex)
@@ -46,7 +47,7 @@ namespace WorkoutApi.Controllers
         {
             try
             {
-                Workout data = await _db.workouts.FirstAsync(workout => workout.Id == id);
+                Workout data = await _unitOfWork.workouts.Get(workout => workout.Id == id);
                 _response.Result = _mapper.Map<WorkoutDto>(data);
             }
             catch (Exception ex)
@@ -56,28 +57,13 @@ namespace WorkoutApi.Controllers
             }
             return _response;
         }
+        
         [HttpGet("Report/{UserId:int}")]
         public async Task<ResponseDto> GetReport(int UserId)
         {
             try
             {
-                List <ReportHeaderDto> report = await _db.scheduleWorkouts
-                    .Where(sw => sw.ScheduledDate < DateTime.Now && sw.Workout.UserId == UserId)
-                    .OrderBy(sw => sw.ScheduledDate)
-                    .Select(sw => new ReportHeaderDto
-                    {
-                        WorkoutId = sw.Workout.Id,
-                        WorkoutName = sw.Workout.Name,
-                        ScheduledDate = sw.ScheduledDate,
-                        ReportDetails = sw.Workout.WorkoutExercises.Select(we => new ReportDetailsDto
-                        {
-                            ExerciseName = we.Exercise.Name,
-                            Sets = we.Sets,
-                            Repetitions = we.Repetitions,
-                            Weight = we.Weight
-                        }).ToList()
-                    })
-                    .ToListAsync();
+                List<ReportHeaderDto> report = await _unitOfWork.workouts.GenerateReport(UserId);
                 _response.Result = report;
 
             }
@@ -88,15 +74,15 @@ namespace WorkoutApi.Controllers
             }
             return _response;
         }
-
+        
         [HttpPost]
         public async Task<ResponseDto> Post([FromBody] WorkoutDto model)
         {
             try
             {
                 Workout data = _mapper.Map<Workout>(model);
-                await _db.workouts.AddAsync(data);
-                await _db.SaveChangesAsync();
+                await _unitOfWork.workouts.Add(data);
+                await _unitOfWork.Save();
                 _response.Result = _mapper.Map<WorkoutDto>(data);
             }
             catch (Exception ex)
@@ -113,8 +99,8 @@ namespace WorkoutApi.Controllers
             try
             {
                 Workout data = _mapper.Map<Workout>(model);
-                _db.workouts.Update(data);
-                await _db.SaveChangesAsync();
+                _unitOfWork.workouts.Update(data);
+                await  _unitOfWork.Save();
                 _response.Result = _mapper.Map<WorkoutDto>(data);
             }
             catch (Exception ex)
@@ -130,9 +116,9 @@ namespace WorkoutApi.Controllers
         {
             try
             {
-                Workout data = _db.workouts.First(workout => workout.Id == id);
-                _db.workouts.Remove(data);
-                await _db.SaveChangesAsync();
+                Workout data = await _unitOfWork.workouts.Get(workout => workout.Id == id);
+                _unitOfWork.workouts.Remove(data);
+                await _unitOfWork.Save();
                 _response.Result = _mapper.Map<WorkoutDto>(data);
             }
             catch (Exception ex)
