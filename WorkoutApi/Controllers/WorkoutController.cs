@@ -26,22 +26,6 @@ namespace WorkoutApi.Controllers
             _response = new();
         }
 
-        [HttpGet]
-        public async Task<ResponseDto> Get()
-        {
-            try
-            {
-                IEnumerable<Workout> data = await _unitOfWork.workouts.GetAll();
-                _response.Result = _mapper.Map<IEnumerable<WorkoutDto>>(data);
-            }
-            catch (Exception ex)
-            {
-                _response.IsSucces = false;
-                _response.Message = ex.Message;
-            }
-            return _response;
-        }
-
         [HttpGet("{id:int}")]
         public async Task<ResponseDto> Get(int id)
         {
