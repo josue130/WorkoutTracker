@@ -15,7 +15,7 @@ namespace WorkoutApi.Repository
             _db = db;
         }
 
-        public async Task<IEnumerable<WorkoutComments>> GetWorkoutComments(int workoutId)
+        public async Task<IEnumerable<WorkoutComments>> GetWorkoutComments(Guid workoutId)
         {
             return await _db.workoutComments.Where(workout => workout.WorkoutId == workoutId).ToListAsync();
         }

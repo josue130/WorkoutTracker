@@ -29,7 +29,7 @@ namespace WorkoutApi.Controllers
 
 
         [HttpGet("{UserId}")]
-        public async Task<ResponseDto> Get(int UserId)
+        public async Task<ResponseDto> Get(Guid UserId)
         {
             try
             {
@@ -82,7 +82,7 @@ namespace WorkoutApi.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<ResponseDto> Delete(int id)
+        public async Task<ResponseDto> Delete(Guid id)
         {
             try
             {

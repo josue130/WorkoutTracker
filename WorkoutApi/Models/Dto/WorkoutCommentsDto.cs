@@ -5,8 +5,8 @@ namespace WorkoutApi.Models.Dto
 {
     public class WorkoutCommentsDto
     {
-        public int Id { get; set; }
-        public int WorkoutId { get; set; }
+        public Guid Id { get; set; }
+        public Guid WorkoutId { get; set; }
         public string Comment { get; set; }
         public DateTime Date { get; set; }
     }

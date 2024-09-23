@@ -5,11 +5,11 @@ namespace WorkoutApi.Models
 {
     public class WorkoutExercise
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public int ExerciseId { get; set; }
         [ForeignKey("ExerciseId")]
         public virtual Exercise Exercise { get; set; } = null!;
-        public int WorkoutId { get; set; }
+        public Guid WorkoutId { get; set; }
         [ForeignKey("WorkoutId")]
         public virtual Workout Workout { get; set; } = null!;
         [Required]

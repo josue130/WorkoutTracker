@@ -13,7 +13,7 @@ namespace WorkoutApi.Repository
             _db = db;
         }
 
-        public async Task<IEnumerable<ScheduleWorkout>> GetScheduleWorkouts(int UserId)
+        public async Task<IEnumerable<ScheduleWorkout>> GetScheduleWorkouts(Guid UserId)
         {
             IEnumerable<ScheduleWorkout> data = await _db.scheduleWorkouts
                      .Include(sw => sw.Workout)

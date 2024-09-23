@@ -12,8 +12,8 @@ using WorkoutApi.Data;
 namespace WorkoutApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240918041410_AddWorkoutCommentsTableToDb")]
-    partial class AddWorkoutCommentsTableToDb
+    [Migration("20240923205542_AddTablesToDb")]
+    partial class AddTablesToDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -52,17 +52,15 @@ namespace WorkoutApi.Migrations
 
             modelBuilder.Entity("WorkoutApi.Models.ScheduleWorkout", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("ScheduledDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("WorkoutId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("WorkoutId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -73,11 +71,9 @@ namespace WorkoutApi.Migrations
 
             modelBuilder.Entity("WorkoutApi.Models.User", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -102,18 +98,16 @@ namespace WorkoutApi.Migrations
 
             modelBuilder.Entity("WorkoutApi.Models.Workout", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -124,11 +118,9 @@ namespace WorkoutApi.Migrations
 
             modelBuilder.Entity("WorkoutApi.Models.WorkoutComments", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Comment")
                         .IsRequired()
@@ -137,8 +129,8 @@ namespace WorkoutApi.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("WorkoutId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("WorkoutId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -149,11 +141,9 @@ namespace WorkoutApi.Migrations
 
             modelBuilder.Entity("WorkoutApi.Models.WorkoutExercise", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("ExerciseId")
                         .HasColumnType("int");
@@ -167,8 +157,8 @@ namespace WorkoutApi.Migrations
                     b.Property<double>("Weight")
                         .HasColumnType("float");
 
-                    b.Property<int>("WorkoutId")
-                        .HasColumnType("int");
+                    b.Property<Guid>("WorkoutId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 

@@ -30,9 +30,9 @@ namespace WorkoutApi.Migrations
                 name: "users",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
@@ -45,10 +45,9 @@ namespace WorkoutApi.Migrations
                 name: "workouts",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserId = table.Column<int>(type: "int", nullable: false)
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -65,10 +64,9 @@ namespace WorkoutApi.Migrations
                 name: "scheduleWorkouts",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    WorkoutId = table.Column<int>(type: "int", nullable: false),
-                    ScheduledDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ScheduledDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    WorkoutId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -82,13 +80,32 @@ namespace WorkoutApi.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "workoutComments",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    WorkoutId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Comment = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_workoutComments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_workoutComments_workouts_WorkoutId",
+                        column: x => x.WorkoutId,
+                        principalTable: "workouts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "workoutExercises",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ExerciseId = table.Column<int>(type: "int", nullable: false),
-                    WorkoutId = table.Column<int>(type: "int", nullable: false),
+                    WorkoutId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Sets = table.Column<int>(type: "int", nullable: false),
                     Repetitions = table.Column<int>(type: "int", nullable: false),
                     Weight = table.Column<double>(type: "float", nullable: false)
@@ -116,6 +133,11 @@ namespace WorkoutApi.Migrations
                 column: "WorkoutId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_workoutComments_WorkoutId",
+                table: "workoutComments",
+                column: "WorkoutId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_workoutExercises_ExerciseId",
                 table: "workoutExercises",
                 column: "ExerciseId");
@@ -136,6 +158,9 @@ namespace WorkoutApi.Migrations
         {
             migrationBuilder.DropTable(
                 name: "scheduleWorkouts");
+
+            migrationBuilder.DropTable(
+                name: "workoutComments");
 
             migrationBuilder.DropTable(
                 name: "workoutExercises");

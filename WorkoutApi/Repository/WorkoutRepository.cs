@@ -14,7 +14,7 @@ namespace WorkoutApi.Repository
             _db = db;
         }
 
-        public async Task<List<ReportHeaderDto>> GenerateReport(int UserId)
+        public async Task<List<ReportHeaderDto>> GenerateReport(Guid UserId)
         {
             List<ReportHeaderDto> report = await _db.scheduleWorkouts
                     .Where(sw => sw.ScheduledDate < DateTime.Now && sw.Workout.UserId == UserId)
