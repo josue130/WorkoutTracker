@@ -27,14 +27,14 @@ namespace WorkoutApi.Controllers
             _response = new();
         }
 
-        [HttpGet("{workoutId:int}")]
+        [HttpGet("{workoutId:Guid}")]
         public async Task<ResponseDto> Get(Guid workoutId)
         {
             try
             {
-                WorkoutExercise data = await _unitOfWork.workoutExercises.Get(we => we.WorkoutId == workoutId); 
+                IEnumerable<WorkoutExercise> data = await _unitOfWork.workoutExercises.GetWorkoutExercises(workoutId); 
                  
-                _response.Result = _mapper.Map<WorkoutExerciseDto>(data);
+                _response.Result = _mapper.Map<IEnumerable<WorkoutExerciseDto>>(data);
             }
             catch (Exception ex)
             {
@@ -82,7 +82,7 @@ namespace WorkoutApi.Controllers
         }
 
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:Guid}")]
         public async Task<ResponseDto> Delete(Guid id)
         {
             try
