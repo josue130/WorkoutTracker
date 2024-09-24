@@ -27,7 +27,7 @@ namespace WorkoutApi.Controllers
         }
 
         [HttpGet("{id:Guid}")]
-        public async Task<ResponseDto> Get(Guid id)
+        public async Task<ResponseDto> GetWorkoutById(Guid id)
         {
             try
             {
@@ -41,13 +41,27 @@ namespace WorkoutApi.Controllers
             }
             return _response;
         }
-        
-        [HttpGet("Report/{UserId:Guid}")]
-        public async Task<ResponseDto> GetReport(Guid UserId)
+        [HttpGet("by-user/{userId:Guid}")]
+        public async Task<ResponseDto> ListAllWorkouts(Guid userId)
         {
             try
             {
-                List<ReportHeaderDto> report = await _unitOfWork.workouts.GenerateReport(UserId);
+                IEnumerable<ListWorkoutsDto> data= await _unitOfWork.workouts.ListWorkouts(userId);
+                _response.Result = data;
+            }
+            catch (Exception ex)
+            {
+                _response.IsSucces = false;
+                _response.Message = ex.Message;
+            }
+            return _response;
+        }
+        [HttpGet("report/{userId:Guid}")]
+        public async Task<ResponseDto> GetReport(Guid userId)
+        {
+            try
+            {
+                List<ReportHeaderDto> report = await _unitOfWork.workouts.GenerateReport(userId);
                 _response.Result = report;
 
             }
@@ -95,12 +109,12 @@ namespace WorkoutApi.Controllers
             return _response;
         }
 
-        [HttpDelete("{id:Guid}")]
-        public async Task<ResponseDto> Delete(Guid id)
+        [HttpDelete("{workoutId:Guid}")]
+        public async Task<ResponseDto> Delete(Guid workoutId)
         {
             try
             {
-                Workout data = await _unitOfWork.workouts.Get(workout => workout.Id == id);
+                Workout data = await _unitOfWork.workouts.Get(workout => workout.Id == workoutId);
                 _unitOfWork.workouts.Remove(data);
                 await _unitOfWork.Save();
                 _response.Result = _mapper.Map<WorkoutDto>(data);

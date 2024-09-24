@@ -7,6 +7,8 @@ namespace WorkoutApi.Repository.IRepository
     {
         void Update(Workout model);
 
+        Task<IEnumerable<ListWorkoutsDto>> ListWorkouts(Guid UserId);
+
         Task<List<ReportHeaderDto>> GenerateReport(Guid UserId);
 
     }

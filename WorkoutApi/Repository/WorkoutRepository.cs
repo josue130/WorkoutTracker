@@ -36,6 +36,24 @@ namespace WorkoutApi.Repository
             return report;
         }
 
+        public async Task<IEnumerable<ListWorkoutsDto>> ListWorkouts(Guid UserId)
+        {
+            IEnumerable<ListWorkoutsDto> data = await _db.scheduleWorkouts
+                     .Include(sw => sw.Workout)
+                     .Where(sw => sw.Workout.UserId == UserId)
+                     .OrderBy(sw => sw.ScheduledDate)
+                     .Select(sw => new ListWorkoutsDto 
+                     {
+                         Id = sw.Id,
+                         WorkoutId = sw.WorkoutId,
+                         WorkoutName = sw.Workout.Name,
+                         ScheduledDate = sw.ScheduledDate
+
+                     })
+                     .ToListAsync();
+            return data;
+        }
+
         public void Update(Workout model)
         {
             _db.workouts.Update(model);
