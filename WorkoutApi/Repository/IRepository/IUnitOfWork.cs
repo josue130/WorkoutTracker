@@ -5,7 +5,7 @@
         IWorkoutRepository workouts { get; }
         IWorkoutCommentsRepository workoutsComments { get; }
         IWorkoutExerciseRepository workoutExercises { get; }
-        IWorkoutScheduleRepository scheduleWorkouts { get; }
+        IScheduleWorkoutRepository scheduleWorkouts { get; }
         IExerciseRepository exercises { get; }
         Task Save();
     }

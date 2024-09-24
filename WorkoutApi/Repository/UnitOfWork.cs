@@ -9,7 +9,7 @@ namespace WorkoutApi.Repository
         public IWorkoutRepository workouts { get; private set; }
         public IWorkoutCommentsRepository workoutsComments { get; private set; }
         public IWorkoutExerciseRepository workoutExercises { get; private set; }
-        public IWorkoutScheduleRepository scheduleWorkouts { get; private set; }
+        public IScheduleWorkoutRepository scheduleWorkouts { get; private set; }
         public IExerciseRepository exercises { get; private set; }
         public UnitOfWork(AppDbContext db)
         {
@@ -17,7 +17,7 @@ namespace WorkoutApi.Repository
             workouts = new WorkoutRepository(db);
             workoutsComments = new WorkoutCommentsRepository(db);
             workoutExercises = new WorkoutExerciseRepository(db);
-            scheduleWorkouts = new WorkoutScheduleRepository(db);
+            scheduleWorkouts = new ScheduleWorkoutRepository(db);
             exercises = new ExerciseRepository(db);
         }
 

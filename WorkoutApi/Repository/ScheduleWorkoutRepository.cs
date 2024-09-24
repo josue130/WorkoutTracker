@@ -5,10 +5,10 @@ using WorkoutApi.Repository.IRepository;
 
 namespace WorkoutApi.Repository
 {
-    public class WorkoutScheduleRepository : Repository<ScheduleWorkout>, IWorkoutScheduleRepository
+    public class ScheduleWorkoutRepository : Repository<ScheduleWorkout>, IScheduleWorkoutRepository
     {
         private readonly AppDbContext _db;
-        public WorkoutScheduleRepository(AppDbContext db) : base(db)
+        public ScheduleWorkoutRepository(AppDbContext db) : base(db)
         {
             _db = db;
         }
