@@ -1,15 +1,17 @@
 # Workout API Documentation
 
-## Descripción del Proyecto
-Esta API permite gestionar y visualizar planes de entrenamiento personalizados. Puedes crear, actualizar, listar y eliminar entrenamientos, además de obtener detalles específicos.
+## Project Description
+This project involves creating a backend system for a workout tracker application where users can sign up, log in, create workout plans, and track their progress. The system will feature JWT authentication, CRUD operations for workouts, and generate reports on past workouts.
 
-## Requisitos Previos
+## Prerequisites
 - .NET 8
 - ASP.NET Core
 - Entity Framework Core
 - SQL Server
 
-## Cómo Ejecutar
-1. Clona el repositorio.
-2. Configura la cadena de conexión en `appsettings.json`.
-3. Ejecuta el proyecto con `dotnet run`.
+## How to Run
+1. Clone the repository.
+2. Set up the connection string in appsettings.json.
+3. Run the project.
+
+## Usage
