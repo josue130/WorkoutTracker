@@ -11,7 +11,7 @@ using WorkoutApi.Repository.IRepository;
 
 namespace WorkoutApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/workout-comments")]
     [ApiController]
     [Authorize]
     public class WorkoutCommentsController : ControllerBase
@@ -26,12 +26,12 @@ namespace WorkoutApi.Controllers
             _response = new();
         }
 
-        [HttpGet("{WorkoutId:Guid}")]
-        public async Task<ResponseDto> Get(Guid WorkoutId)
+        [HttpGet("{workout_id:Guid}")]
+        public async Task<ResponseDto> Get(Guid workout_id)
         {
             try
             {
-                IEnumerable<WorkoutComments> data = await _unitOfWork.workoutsComments.GetWorkoutComments(WorkoutId);
+                IEnumerable<WorkoutComments> data = await _unitOfWork.workoutsComments.GetWorkoutComments(workout_id);
                 _response.Result = _mapper.Map<IEnumerable<WorkoutCommentsDto>>(data);
             }
             catch (Exception ex)
@@ -79,12 +79,12 @@ namespace WorkoutApi.Controllers
             return _response;
         }
 
-        [HttpDelete("{id:Guid}")]
-        public async Task<ResponseDto> Delete(Guid id)
+        [HttpDelete("{workout_comment_id:Guid}")]
+        public async Task<ResponseDto> Delete(Guid workout_comment_id)
         {
             try
             {
-                WorkoutComments data = await _unitOfWork.workoutsComments.Get(wc => wc.Id == id);
+                WorkoutComments data = await _unitOfWork.workoutsComments.Get(wc => wc.Id == workout_comment_id);
                 _unitOfWork.workoutsComments.Remove(data);
                 await _unitOfWork.Save();
                 _response.Result = _mapper.Map<WorkoutCommentsDto>(data);

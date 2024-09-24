@@ -6,7 +6,7 @@ using WorkoutApi.Service.IService;
 
 namespace WorkoutApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/auth")]
     [ApiController]
     public class AuthController : ControllerBase
     {
@@ -18,7 +18,7 @@ namespace WorkoutApi.Controllers
             _response = new();
         }
 
-        [HttpPost("Login")]
+        [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto model)
         {
             var loginResponse = await _authService.Login(model);
@@ -31,7 +31,7 @@ namespace WorkoutApi.Controllers
             _response.Result = loginResponse;
             return Ok(_response);
         }
-        [HttpPost("Register")]
+        [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequestDto model)
         {
             var errorMessage = await _authService.Register(model);

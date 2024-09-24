@@ -12,7 +12,7 @@ using WorkoutApi.Repository.IRepository;
 
 namespace WorkoutApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/workout-exercises")]
     [ApiController]
     [Authorize]
     public class WorkoutExerciseController : ControllerBase
@@ -27,12 +27,12 @@ namespace WorkoutApi.Controllers
             _response = new();
         }
 
-        [HttpGet("{workoutId:Guid}")]
-        public async Task<ResponseDto> Get(Guid workoutId)
+        [HttpGet("{workout_id:Guid}")]
+        public async Task<ResponseDto> Get(Guid workout_id)
         {
             try
             {
-                IEnumerable<WorkoutExercise> data = await _unitOfWork.workoutExercises.GetWorkoutExercises(workoutId); 
+                IEnumerable<WorkoutExercise> data = await _unitOfWork.workoutExercises.GetWorkoutExercises(workout_id); 
                  
                 _response.Result = _mapper.Map<IEnumerable<WorkoutExerciseDto>>(data);
             }
@@ -82,12 +82,12 @@ namespace WorkoutApi.Controllers
         }
 
 
-        [HttpDelete("{id:Guid}")]
-        public async Task<ResponseDto> Delete(Guid id)
+        [HttpDelete("{workout_exercise_id:Guid}")]
+        public async Task<ResponseDto> Delete(Guid workout_exercise_id)
         {
             try
             {
-                WorkoutExercise data = await _unitOfWork.workoutExercises.Get(we => we.Id == id);
+                WorkoutExercise data = await _unitOfWork.workoutExercises.Get(we => we.Id == workout_exercise_id);
                 _unitOfWork.workoutExercises.Remove(data);
                 await _unitOfWork.Save();
                 _response.Result = _mapper.Map<WorkoutExerciseDto>(data);

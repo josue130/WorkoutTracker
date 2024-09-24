@@ -11,7 +11,7 @@ using WorkoutApi.Repository.IRepository;
 
 namespace WorkoutApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/exercises")]
     [ApiController]
     [Authorize]
     public class ExerciseController : ControllerBase
@@ -42,12 +42,12 @@ namespace WorkoutApi.Controllers
             return _response;
         }
 
-        [HttpGet("{id}")]
-        public async Task<ResponseDto> Get(int id)
+        [HttpGet("{exercise_id:int}")]
+        public async Task<ResponseDto> Get(int exercise_id)
         {
             try
             {
-                Exercise data = await _unitOfWork.exercises.Get(exercise => exercise.Id == id); 
+                Exercise data = await _unitOfWork.exercises.Get(exercise => exercise.Id == exercise_id); 
                 _response.Result = _mapper.Map<ExerciseDto>(data);
             }
             catch (Exception ex)
@@ -93,12 +93,12 @@ namespace WorkoutApi.Controllers
             return _response;
         }
 
-        [HttpDelete("{id}")]
-        public async Task<ResponseDto> Delete(int id)
+        [HttpDelete("{exercise_id:int}")]
+        public async Task<ResponseDto> Delete(int exercise_id)
         {
             try
             {
-                Exercise data = await _unitOfWork.exercises.Get(exercise => exercise.Id == id);
+                Exercise data = await _unitOfWork.exercises.Get(exercise => exercise.Id == exercise_id);
                 _unitOfWork.exercises.Remove(data);
                 await _unitOfWork.Save();
                 _response.Result = _mapper.Map<ExerciseDto>(data);

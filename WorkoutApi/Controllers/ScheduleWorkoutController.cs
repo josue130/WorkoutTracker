@@ -11,7 +11,7 @@ using WorkoutApi.Repository.IRepository;
 
 namespace WorkoutApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/schedule-workouts")]
     [ApiController]
     [Authorize]
     public class ScheduleWorkoutController : ControllerBase
@@ -81,12 +81,12 @@ namespace WorkoutApi.Controllers
             return _response;
         }
 
-        [HttpDelete("{id:Guid}")]
-        public async Task<ResponseDto> Delete(Guid id)
+        [HttpDelete("{schedule_workout_id:Guid}")]
+        public async Task<ResponseDto> Delete(Guid schedule_workout_id)
         {
             try
             {
-                ScheduleWorkout data = await _unitOfWork.scheduleWorkouts.Get(sw => sw.Id == id);
+                ScheduleWorkout data = await _unitOfWork.scheduleWorkouts.Get(sw => sw.Id == schedule_workout_id);
                 _unitOfWork.scheduleWorkouts.Remove(data);
                 await _unitOfWork.Save();
                 _response.Result = _mapper.Map<ScheduleWorkoutDto>(data);
