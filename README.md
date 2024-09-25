@@ -68,5 +68,5 @@ This project involves creating a backend system for a workout tracker applicatio
   Update an exercise from a workout. 
 - **DELETE** `/workout-exercises/{workou_exercise_id}`
   Delete an exercise from a workout. 
-  
-  
+## Useful Links
+- [Project detail](https://roadmap.sh/projects/fitness-workout-tracker)
