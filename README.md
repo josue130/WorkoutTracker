@@ -59,6 +59,14 @@ This project involves creating a backend system for a workout tracker applicatio
   Update a comment. 
 - **DELETE** `/workout-comments/{workout_comment_id}`
   Delete a comment.
-
+### Workout exercise
+- **GET** `/workout-exercises/{workout_id}`
+  Retrieve all exercises from a workout.
+- **POST** `/workout-exercises`
+  Add an exercise to a workout.
+- **PUT** `/workout-exercises`
+  Update an exercise from a workout. 
+- **DELETE** `/workout-exercises/{workou_exercise_id}`
+  Delete an exercise from a workout. 
   
   
