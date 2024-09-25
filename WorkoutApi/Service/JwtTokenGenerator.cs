@@ -25,7 +25,8 @@ namespace WorkoutApi.Service
             var claimList = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Email,applicationUser.Email),
-                new Claim(JwtRegisteredClaimNames.Name,applicationUser.UserName)
+                new Claim(JwtRegisteredClaimNames.Name,applicationUser.UserName),
+                new Claim(ClaimTypes.NameIdentifier, applicationUser.Id.ToString())
             };
 
             var tokenDescriptor = new SecurityTokenDescriptor

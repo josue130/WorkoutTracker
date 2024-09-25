@@ -6,6 +6,7 @@ using WorkoutApi.Data;
 using WorkoutApi.Models;
 using WorkoutApi.Models.Dto;
 using WorkoutApi.Repository.IRepository;
+using WorkoutApi.Service;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -28,12 +29,13 @@ namespace WorkoutApi.Controllers
         }
 
 
-        [HttpGet("{UserId:Guid}")]
-        public async Task<ResponseDto> Get(Guid UserId)
+        [HttpGet]
+        public async Task<ResponseDto> Get()
         {
             try
             {
-                IEnumerable<ScheduleWorkout> data = await _unitOfWork.scheduleWorkouts.GetScheduleWorkouts(UserId);
+                var userId = JwtHelper.GetUserId(User);
+                IEnumerable<ScheduleWorkout> data = await _unitOfWork.scheduleWorkouts.GetScheduleWorkouts(userId);
                 _response.Result = _mapper.Map<IEnumerable<ScheduleWorkoutDto>>(data);
             }
             catch (Exception ex)

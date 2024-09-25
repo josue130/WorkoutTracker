@@ -6,6 +6,7 @@ using WorkoutApi.Data;
 using WorkoutApi.Models;
 using WorkoutApi.Models.Dto;
 using WorkoutApi.Repository.IRepository;
+using WorkoutApi.Service;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -41,11 +42,12 @@ namespace WorkoutApi.Controllers
             }
             return _response;
         }
-        [HttpGet("by-user/{userId:Guid}")]
-        public async Task<ResponseDto> ListAllWorkouts(Guid userId)
+        [HttpGet]
+        public async Task<ResponseDto> ListAllWorkouts()
         {
             try
             {
+                var userId = JwtHelper.GetUserId(User);
                 IEnumerable<ListWorkoutsDto> data= await _unitOfWork.workouts.ListWorkouts(userId);
                 _response.Result = data;
             }
@@ -56,11 +58,12 @@ namespace WorkoutApi.Controllers
             }
             return _response;
         }
-        [HttpGet("report/{userId:Guid}")]
-        public async Task<ResponseDto> GetReport(Guid userId)
+        [HttpGet("report")]
+        public async Task<ResponseDto> GetReport()
         {
             try
             {
+                var userId = JwtHelper.GetUserId(User); 
                 List<ReportHeaderDto> report = await _unitOfWork.workouts.GenerateReport(userId);
                 _response.Result = report;
 

@@ -25,6 +25,7 @@ builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("ApiSett
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -55,7 +56,8 @@ builder.Services.AddSwaggerGen(option =>
 builder.AddAppAuthentication();
 builder.Services.AddAuthorization();
 var app = builder.Build();
-
+var httpContextAccessor = app.Services.GetRequiredService<IHttpContextAccessor>();
+JwtHelper.Configure(httpContextAccessor);
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
