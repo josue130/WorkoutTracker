@@ -1,6 +1,6 @@
-@WorkoutApi_HostAddress = http://localhost:5087
+@WorkoutAPI_HostAddress = http://localhost:5008
 
-GET {{WorkoutApi_HostAddress}}/weatherforecast/
+GET {{WorkoutAPI_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
