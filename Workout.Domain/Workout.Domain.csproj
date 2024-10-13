@@ -7,8 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Exceptions\" />
-    <Folder Include="Constants\" />
     <Folder Include="ValueObjects\" />
   </ItemGroup>
 

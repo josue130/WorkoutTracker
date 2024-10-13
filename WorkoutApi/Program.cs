@@ -1,5 +1,12 @@
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Workout.Application.Common.Interfaces;
+using Workout.Application.Services;
+using Workout.Application.Services.Implementation;
+using Workout.Application.Services.Interface;
 using Workout.Infrastructure.Data;
+using Workout.Infrastructure.Repository;
+using Workout.Infrastructure.TokenGenerator;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,7 +15,14 @@ builder.Services.AddDbContext<AppDbContext>(option =>
 {
     option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+IMapper mapper = MappingConfig.RegisterMaps().CreateMapper();
+builder.Services.AddSingleton(mapper);
+builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("ApiSettings:JwtOptions"));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator >();
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddControllers();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

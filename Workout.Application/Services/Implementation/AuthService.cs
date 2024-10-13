@@ -58,7 +58,7 @@ namespace Workout.Application.Services.Implementation
             };
             try
             {
-                var user = await _unitOfWork.auth.Get(u => u.UserName == request.UserName);
+                var user = await _unitOfWork.auth.Get(u => u.UserName.ToLower() == request.UserName.ToLower());
                 if (user != null)
                 {
                     return "Username already exits";

@@ -23,7 +23,8 @@ namespace Workout.Infrastructure.Repository
         {
             IQueryable<T> query = dbSet;
             query = query.Where(filter);
-            return await query.FirstAsync();
+            var data = await query.FirstOrDefaultAsync();
+            return data;
         }
 
         public async Task<IEnumerable<T>> GetAll()
