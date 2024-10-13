@@ -19,8 +19,7 @@
 		</PackageReference>
 	</ItemGroup>
 	<ItemGroup>
-	  <ProjectReference Include="..\Workout.Domain\Workout.Domain.csproj" />
-	<ProjectReference Include="..\Workout.Application\Workout.Application.csproj" />
+	  <ProjectReference Include="..\Workout.Application\Workout.Application.csproj" />
 	</ItemGroup>
 
 </Project>

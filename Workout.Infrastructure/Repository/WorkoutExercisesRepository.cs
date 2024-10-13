@@ -1,13 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Workout.Application.Common.Interfaces;
 using Workout.Domain.Entities;
 using Workout.Infrastructure.Data;
-
+using Workout.Application.Common.Interfaces;
 namespace Workout.Infrastructure.Repository
 {
     public class WorkoutExercisesRepository : Repository<WorkoutExercise>, IWorkoutExercisesRepository

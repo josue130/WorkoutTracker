@@ -13,6 +13,7 @@ namespace Workout.Application.Common.Interfaces
         IWorkoutExercisesRepository workoutExercises { get; }
         IScheduleWorkoutRepository scheduleWorkouts { get; }
         IExerciseRepository exercises { get; }
+        IAuthRepository auth { get; }
         Task Save();
     }
 }

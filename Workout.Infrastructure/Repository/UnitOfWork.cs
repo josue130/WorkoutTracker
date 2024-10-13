@@ -12,6 +12,7 @@ namespace Workout.Infrastructure.Repository
         public IWorkoutExercisesRepository workoutExercises { get; private set; }
         public IScheduleWorkoutRepository scheduleWorkouts { get; private set; }
         public IExerciseRepository exercises { get; private set; }
+        public IAuthRepository auth { get ; private set; }
         public UnitOfWork(AppDbContext db)
         {
             _db = db;
@@ -20,6 +21,7 @@ namespace Workout.Infrastructure.Repository
             workoutExercises = new WorkoutExercisesRepository(db);
             scheduleWorkouts = new ScheduleWorkoutRepository(db);
             exercises = new ExerciseRepository(db);
+            auth = new AuthRepository(db);
         }
 
 
