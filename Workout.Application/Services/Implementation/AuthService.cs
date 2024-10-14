@@ -3,6 +3,7 @@ using Workout.Application.Common.Dto;
 using Workout.Application.Common.Interfaces;
 using Workout.Application.Services.Interface;
 using Workout.Domain.Entities;
+using Workout.Domain.Exceptions;
 
 namespace Workout.Application.Services.Implementation
 {
@@ -22,66 +23,65 @@ namespace Workout.Application.Services.Implementation
         }
         public async Task<LoginResponseDto> Login(LoginRequestDto loginRequest)
         {
-            try
-            {
-                User user = await _unitOfWork.auth.Get(u => u.UserName.ToLower() == loginRequest.UserName.ToLower());
-                var applicationUser = new UserDto()
-                {
-                    Name = user.FullName,
-                    UserName = loginRequest.UserName
-                };
-                PasswordVerificationResult result = _passwordHasher.VerifyHashedPassword(applicationUser, user.Password, loginRequest.Password);
-                if (user != null && result == PasswordVerificationResult.Success)
-                {
-                    var token = _jwtTokenGenerator.GenerateToken(user);
-                    return new LoginResponseDto() { User = applicationUser, Token = token };
-                }
+            User user = await _unitOfWork.auth.Get(u => u.UserName.ToLower() == loginRequest.UserName.ToLower());
 
-                else
-                {
-                    return new LoginResponseDto() { User = null, Token = "" };
-                }
-            }
-            catch (Exception ex)
+        
+            if (user == null)
             {
-                return new LoginResponseDto() { User = null, Token = "" };
+                throw new UserNameOrPasswordIncorrectException();
             }
 
+ 
+            UserDto applicationUser = new UserDto
+            {
+                Name = user.FullName,
+                UserName = user.UserName 
+            };
+
+
+            var result = _passwordHasher.VerifyHashedPassword(applicationUser, user.Password, loginRequest.Password);
+
+            if (result != PasswordVerificationResult.Success)
+            {
+                throw new UserNameOrPasswordIncorrectException();
+            }
+
+            var token = _jwtTokenGenerator.GenerateToken(user);
+
+            return new LoginResponseDto
+            {
+                User = applicationUser,
+                Token = token
+            };
         }
 
-        public async Task<string> Register(RegisterRequestDto request)
+        public async Task Register(RegisterRequestDto request)
         {
             var applicationUser = new UserDto()
             {
                 Name = request.FullName,
                 UserName = request.UserName
             };
-            try
+
+            var user = await _unitOfWork.auth.Get(u => u.UserName.ToLower() == request.UserName.ToLower());
+            if (user != null)
             {
-                var user = await _unitOfWork.auth.Get(u => u.UserName.ToLower() == request.UserName.ToLower());
-                if (user != null)
-                {
-                    return "Username already exits";
-                }
-
-                var hashPassword = _passwordHasher.HashPassword(applicationUser, request.Password);
-
-                var newUser = new User()
-                {
-                    UserName = request.UserName,
-                    Password = hashPassword,
-                    Email = request.Email,
-                    FullName = request.FullName
-
-                };
-                await _unitOfWork.auth.Add(newUser);
-                await _unitOfWork.Save();
+                throw new UserNameAlreadyExistsException();
             }
-            catch (Exception ex)
+
+            var hashPassword = _passwordHasher.HashPassword(applicationUser, request.Password);
+
+            var newUser = new User()
             {
+                UserName = request.UserName,
+                Password = hashPassword,
+                Email = request.Email,
+                FullName = request.FullName
 
-            }
-            return "";
+            };
+            await _unitOfWork.auth.Add(newUser);
+            await _unitOfWork.Save();
+
         }
         
         

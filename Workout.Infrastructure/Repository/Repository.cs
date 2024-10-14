@@ -21,16 +21,17 @@ namespace Workout.Infrastructure.Repository
 
         public async Task<T> Get(Expression<Func<T, bool>> filter)
         {
-            IQueryable<T> query = dbSet;
-            query = query.Where(filter);
-            var data = await query.FirstOrDefaultAsync();
-            return data;
+            var entity = await dbSet
+                .AsNoTrackingWithIdentityResolution()
+                .FirstOrDefaultAsync(filter);
+            return entity;
         }
 
         public async Task<IEnumerable<T>> GetAll()
         {
-            IQueryable<T> query = dbSet;
-            return await query.ToListAsync();
+            return await dbSet
+                .AsNoTrackingWithIdentityResolution()
+                .ToListAsync();
         }
 
         public void Remove(T entity)

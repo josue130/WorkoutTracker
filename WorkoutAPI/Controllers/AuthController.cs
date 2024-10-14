@@ -24,26 +24,13 @@ namespace WorkoutAPI.Controllers
         public async Task<IActionResult> Login([FromBody] LoginRequestDto model)
         {
             var loginResponse = await _authService.Login(model);
-
-            if (loginResponse.User == null)
-            {
-                _response.isSuccess = false;
-                _response.message = "User name or password is incorrect";
-                return BadRequest(_response);
-            }
             _response.result = loginResponse;
             return Ok(_response);
         }
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequestDto model)
         {
-            var errorMessage = await _authService.Register(model);
-            if (!string.IsNullOrEmpty(errorMessage))
-            {
-                _response.isSuccess = false;
-                _response.message = errorMessage;
-                return BadRequest(_response);
-            }
+            await _authService.Register(model);
             return Ok(_response);
         }
 

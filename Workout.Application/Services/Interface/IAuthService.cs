@@ -10,6 +10,6 @@ namespace Workout.Application.Services.Interface
     public interface IAuthService
     {
         Task<LoginResponseDto> Login(LoginRequestDto loginRequest);
-        Task<string> Register(RegisterRequestDto request);
+        Task Register(RegisterRequestDto request);
     }
 }

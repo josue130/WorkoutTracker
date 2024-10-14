@@ -7,6 +7,7 @@ using Workout.Application.Services.Interface;
 using Workout.Infrastructure.Data;
 using Workout.Infrastructure.Repository;
 using Workout.Infrastructure.TokenGenerator;
+using WorkoutAPI.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,6 +41,7 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 ApplyMigration();
+app.UseMiddleware<CustomExceptionMiddleware>();
 app.MapControllers();
 
 app.Run();
