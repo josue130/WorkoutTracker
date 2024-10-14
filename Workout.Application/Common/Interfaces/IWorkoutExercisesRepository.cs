@@ -9,7 +9,7 @@ namespace Workout.Application.Common.Interfaces
 {
     public interface IWorkoutExercisesRepository : IRepository<WorkoutExercise>
     {
-        Task<IEnumerable<WorkoutExercise>> GetWorkoutExercises(Guid workoutId);
+        Task<IEnumerable<WorkoutExercise>> GetWorkoutExercises(Guid workoutId, Guid userId);
         void Update(WorkoutExercise model);
     }
 }

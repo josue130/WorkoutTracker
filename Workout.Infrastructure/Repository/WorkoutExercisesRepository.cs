@@ -12,9 +12,9 @@ namespace Workout.Infrastructure.Repository
             _db = db;
         }
 
-        public async Task<IEnumerable<WorkoutExercise>> GetWorkoutExercises(Guid workoutId)
+        public async Task<IEnumerable<WorkoutExercise>> GetWorkoutExercises(Guid workoutId, Guid userId)
         {
-            return await _db.workoutExercises.Where(workout => workout.WorkoutId == workoutId).ToListAsync();
+            return await _db.workoutExercises.Where(workout => workout.WorkoutId == workoutId && workout.Workout.UserId==userId).ToListAsync();
         }
 
         public void Update(WorkoutExercise model)
