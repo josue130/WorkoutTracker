@@ -37,6 +37,7 @@ namespace WorkoutAPI.Middleware
                 InvalidOperationException => HttpStatusCode.BadRequest,
                 UserNameOrPasswordIncorrectException => HttpStatusCode.BadRequest,
                 UserNameAlreadyExistsException => HttpStatusCode.Conflict,
+                WorkoutPlanNameAlreadyExistsException => HttpStatusCode.Conflict,
                 UnauthorizedAccessException => HttpStatusCode.Unauthorized,
                 _ => HttpStatusCode.InternalServerError
             };

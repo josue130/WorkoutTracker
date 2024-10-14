@@ -49,10 +49,10 @@ namespace Workout.Infrastructure.Repository
                      .ToListAsync();
             return data;
         }
-
+        
         public void Update(WorkoutPlan model)
         {
-            throw new NotImplementedException();
+            _db.workoutPlans.Update(model);
         }
 
     }

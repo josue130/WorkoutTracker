@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Workout.Application.Common.Dto;
@@ -10,12 +11,12 @@ namespace Workout.Application.Services.Interface
 {
     public interface IWorkoutPlanService
     {
-        Task AddWorkoutPlan(WorkoutPlanDto model);
-        Task UpdateWorkoutPlan(WorkoutPlanDto model);
-        Task DeleteWorkoutPlan(Guid workoutPlanId);
-        Task<WorkoutPlanDto> GetByWorkouPlanId(Guid workoutPlanId);
-        Task<IEnumerable<WorkoutPlanResponseDto>> GenerateReport(Guid userId);
-        Task<IEnumerable<WorkoutPlanResponseDto>> GetWorkoutsbyUserId(Guid userId);
+        Task AddWorkoutPlan(WorkoutPlanDto model, ClaimsPrincipal user);
+        Task UpdateWorkoutPlan(WorkoutPlanDto model, ClaimsPrincipal user);
+        Task DeleteWorkoutPlan(Guid workoutPlanId, ClaimsPrincipal user);
+        Task<WorkoutPlanDto> GetByWorkouPlanId(Guid workoutPlanId, ClaimsPrincipal user);
+        Task<IEnumerable<WorkoutPlanResponseDto>> GenerateReport(ClaimsPrincipal user);
+        Task<IEnumerable<WorkoutPlanResponseDto>> GetWorkoutsbyUserId(ClaimsPrincipal user);
 
 
     }

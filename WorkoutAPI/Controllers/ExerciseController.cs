@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Workout.Application.Common.Dto;
 using Workout.Application.Services.Interface;
 using Workout.Domain.Entities;
@@ -9,6 +10,7 @@ namespace WorkoutAPI.Controllers
 {
     [Route("api/exercises")]
     [ApiController]
+    [Authorize]
     public class ExerciseController : ControllerBase
     {
         private readonly IExerciseService _exerciseService;
