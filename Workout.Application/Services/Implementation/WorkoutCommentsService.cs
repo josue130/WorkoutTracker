@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Workout.Application.Common.Dto;
@@ -20,33 +22,70 @@ namespace Workout.Application.Services.Implementation
             _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
-        public async Task AddWorkoutComment(WorkoutCommentsDto model)
+        public async Task AddWorkoutComment(WorkoutCommentsDto model, ClaimsPrincipal user)
         {
-            WorkoutComments workoutComments = _mapper.Map<WorkoutComments>(model);
+            Guid userId = CheckUserId(user);
+            await CheckAccessToWorkout(model.WorkoutId, userId);
+            WorkoutComments workoutComments = WorkoutComments.Create(model.WorkoutId,model.Comment);
             await _unitOfWork.workoutsComments.Add(workoutComments);
             await _unitOfWork.Save();
         }
 
-        public async Task DeleteWorkoutComment(Guid workoutCoomentId)
+        public async Task DeleteWorkoutComment(Guid workoutCommentId, ClaimsPrincipal user)
         {
-            WorkoutComments workoutComments = await _unitOfWork.workoutsComments.Get(wc => wc.Id == workoutCoomentId);
+            Guid userId = CheckUserId(user);
+            WorkoutComments workoutComments = await CheckAccess(workoutCommentId, userId);
             _unitOfWork.workoutsComments.Remove(workoutComments);
             await _unitOfWork.Save();
         }
 
-        public async Task<IEnumerable<WorkoutCommentsDto>> GetWorkoutCommentsByWorkoutId(Guid workoutId)
+        public async Task<IEnumerable<WorkoutCommentsDto>> GetWorkoutCommentsByWorkoutId(Guid workoutId, ClaimsPrincipal user)
         {
+            Guid userId = CheckUserId(user);
+            await CheckAccessToWorkout(workoutId, userId);
             IEnumerable<WorkoutComments> workoutComments = await _unitOfWork.workoutsComments.GetWorkoutComments(workoutId);
             IEnumerable<WorkoutCommentsDto> workoutCommentsDto = _mapper.Map<IEnumerable<WorkoutCommentsDto>>(workoutComments);
             return workoutCommentsDto;
 
         }
 
-        public async Task UpdateWorkoutComment(WorkoutCommentsDto model)
+        public async Task UpdateWorkoutComment(WorkoutCommentsDto model, ClaimsPrincipal user)
         {
-            WorkoutComments workoutComments = _mapper.Map<WorkoutComments>(model);
+            Guid userId = CheckUserId(user);
+            await CheckAccessToWorkout(model.WorkoutId, userId);
+            WorkoutComments workoutComments = WorkoutComments.Create(model.WorkoutId, model.Comment);
+            workoutComments.Id = (Guid)model.Id;
             _unitOfWork.workoutsComments.Update(workoutComments);
             await _unitOfWork.Save();
         }
+
+        private Guid CheckUserId(ClaimsPrincipal user)
+        {
+            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new UnauthorizedAccessException();
+            }
+            return Guid.Parse(userId);
+        }
+        private async Task<WorkoutPlan> CheckAccessToWorkout(Guid? workoutPlanId, Guid userId)
+        {
+            WorkoutPlan workoutPlan = await _unitOfWork.workoutPlans.Get(wp => wp.Id == workoutPlanId && wp.UserId == userId);
+            if (workoutPlan == null)
+            {
+                throw new UnauthorizedAccessException();
+            }
+            return workoutPlan;
+        }
+        private async Task<WorkoutComments> CheckAccess(Guid? workoutExerciseId, Guid userId)
+        {
+            WorkoutComments workoutComments = await _unitOfWork.workoutsComments.Get(wp => wp.Id == workoutExerciseId && wp.Workout.UserId == userId);
+            if (workoutComments == null)
+            {
+                throw new UnauthorizedAccessException();
+            }
+            return workoutComments;
+        }
+
     }
 }
