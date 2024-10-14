@@ -71,14 +71,8 @@ namespace Workout.Application.Services.Implementation
 
             var hashPassword = _passwordHasher.HashPassword(applicationUser, request.Password);
 
-            var newUser = new User()
-            {
-                UserName = request.UserName,
-                Password = hashPassword,
-                Email = request.Email,
-                FullName = request.FullName
+            User newUser = User.Create(request.FullName,request.Email,request.UserName,hashPassword);
 
-            };
             await _unitOfWork.auth.Add(newUser);
             await _unitOfWork.Save();
 

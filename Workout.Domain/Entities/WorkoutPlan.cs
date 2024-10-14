@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Workout.Domain.ValueObjects;
 
 namespace Workout.Domain.Entities
 {
@@ -14,6 +15,20 @@ namespace Workout.Domain.Entities
         [ForeignKey("UserId")]
         public virtual User User { get; set; } = null!;
         public virtual ICollection<WorkoutExercise> WorkoutExercises { get; set; } = new List<WorkoutExercise>();
+
+        public static WorkoutPlan Create(string name, string description, Guid userId)
+        {
+            WorkoutPlanNameObject NameObj = new WorkoutPlanNameObject(name);
+            WorkoutPlanDescriptionObject DescriptionObj = new WorkoutPlanDescriptionObject(description);
+           
+            return new WorkoutPlan
+            {
+                Id = Guid.NewGuid(),
+                Name = NameObj.value,
+                Description = DescriptionObj.value,
+                UserId = userId
+            };
+        }
         
     }
 }

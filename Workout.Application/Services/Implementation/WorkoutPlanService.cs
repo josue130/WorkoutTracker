@@ -27,8 +27,8 @@ namespace Workout.Application.Services.Implementation
             {
                 throw new WorkoutPlanNameAlreadyExistsException();
             }
-            model.UserId = userId;
-            WorkoutPlan workoutPlan = _mapper.Map<WorkoutPlan>(model);
+         
+            WorkoutPlan workoutPlan = WorkoutPlan.Create(model.Name, model.Description, userId);
             await _unitOfWork.workoutPlans.Add(workoutPlan);
             await _unitOfWork.Save();
         }
@@ -75,8 +75,8 @@ namespace Workout.Application.Services.Implementation
                     throw new WorkoutPlanNameAlreadyExistsException();
                 }
             }
-            model.UserId = userId;
-            WorkoutPlan workoutPlan = _mapper.Map<WorkoutPlan>(model);
+            WorkoutPlan workoutPlan = WorkoutPlan.Create(model.Name, model.Description, userId);
+            workoutPlan.Id = data.Id;
             _unitOfWork.workoutPlans.Update(workoutPlan);
             await _unitOfWork.Save();
         }
