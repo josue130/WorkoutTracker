@@ -17,56 +17,179 @@ This project involves creating a backend system for a workout tracker applicatio
 ## Usage
 
 ### Auth
-- **POST**  `/login`
-  Log in a user and return a JWT.
-- **POST** `/register`
-  Register a new user.
+- **POST** `auth/login`
+  - **Description**: Authenticates a user  and returns a JWT token.
+  - **Request Body**:
+    ```json
+    {
+      "userName": "user@example.com",
+      "password": "pas5word-*123"
+    }
+    ```
+  - **Response**: JWT token on success.
+    
+- **POST** `auth/register`
+  - **Description**: Registers a new user in the system.
+  - **Request Body**:
+    ```json
+    {
+      "userName": "string",
+      "email": "string",
+      "fullName": "string",
+      "password": "string"
+    }
+    ```
 ### Exercise
-- **GET** `/exercises`
-  Retrieve all exercises.
-- **GET** `/exercises/{exercise_id}`
-  Retrieves a specific  exercise.
+- **GET** `exercises`
+    -  **Description** : Retrieve all exercises.
+    -  **Authentication**: Required.
+    
+  
 ### Workout
 - **GET** `/workouts/{workout_id}`
-  Retrieve a workout.
+    - **Description** : Retrieve general information about a workout..
+    -  **Authentication**: Required.
+  
 - **GET** `/workouts`
-  List all workout plans for the current user.
-- **GET** `/workouts/report`
-  Generate reports on past workouts.
+    -  **Description** : Retrieve all workouts **that are already scheduled** .
+    -  **Authentication**: Require.
+      
 - **POST** `/workouts`
-  Create a new workout.
+  - **Description**: Create a new workout.
+  - **Authentication**: Required.
+  - **Request Body**:
+    ```json
+    {
+      "name": "string",
+      "description": "string"
+    }
+    ```
+    
 - **PUT** `/workouts`
-  Update a workout.
+  - **Description**: Update a workout.
+  - **Authentication**: Required. 
+  - **Request Body**:
+    ```json
+    {
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "name": "string",
+      "description": "string"
+    }
+    ```
+  
 - **DELETE** `/workouts/{workout_id}`
-  Delete a workout.
+  - **Description**: Delete a workout.
+  - **Authentication**: Required. 
+
 ### Scheduled Workout
-- **GET** `/schedule-workouts`
-  List future scheduled workouts.
-- **GET** `/schedule-workouts/{schedule_workout_id}`
-  Retrieve a scheduled workout.
-- **POST** `/schedule-workouts`
-  Schedule a workout.
+- **GET** `/workout-schedules`
+  - **Description**: Retrieve a list of workouts scheduled for the future.
+  - **Authentication**: Required. 
+  
+- **POST** `/workout-schedules`
+  - **Description**: Schedule a workout.
+  - **Authentication**: Required.
+  - **Request Body**:
+    ```json
+    {
+      "scheduledDate": "2024-10-15T02:25:00.954Z",
+      "workoutId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+    }
+    ```
+  
 - **PUT** `/schedule-workouts`
-  Update a scheduled workout.
-- **DELETE** `/schedule-workouts/{schedule_workout_id}`
-  Delete a scheduled workout.
+  - **Description**: Update a scheduled workout..
+  - **Authentication**: Required.
+  - **Request Body**:
+    ```json
+    {
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "scheduledDate": "2024-10-15T02:25:00.954Z",
+      "workoutId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+    }
+    ```
+  
+- **DELETE** `/workout-schedules/{schedule_workout_id}`
+  - **Description**: Delete a scheduled workout.
+  - **Authentication**: Required. 
+  
 ### Workout comments
 - **GET** `/workout-comments/{workout_id}`
-  Retrieve all comments from a workout.
+  - **Description**: Retrieve all comments from a workout.
+  - **Authentication**: Required. 
+  
 - **POST** `/workout-comments`
-  Add a comment to a workout.
+  - **Description**: Add a comment to a workout.
+  - **Authentication**: Required.
+  - **Request Body**:
+    ```json
+    {
+      "workoutId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "comment": "string"
+    }
+    ```
+  
 - **PUT** `/WorkoutComments`
-  Update a comment. 
+  - **Description**: Update a comment. 
+  - **Authentication**: Required.
+  - **Request Body**:
+    ```json
+    {
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "workoutId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "comment": "string"
+    }
+    ```
+    
 - **DELETE** `/workout-comments/{workout_comment_id}`
-  Delete a comment.
+  - **Description**: Delete a comment.
+  - **Authentication**: Required.
+  
 ### Workout exercise
 - **GET** `/workout-exercises/{workout_id}`
-  Retrieve all exercises from a workout.
+  - **Description**: Retrieve all exercises from a workout.
+  - **Authentication**: Required. 
+  
 - **POST** `/workout-exercises`
-  Add an exercise to a workout.
+  - **Description**: Add an exercise to a workout.
+  - **Authentication**: Required.
+  - **Request Body**:
+    ```json
+    {
+      "sets": 5,
+      "repetitions": 5,
+      "weight": 6,
+      "exerciseId": 7,
+      "workoutId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+    }
+    ```
+  
 - **PUT** `/workout-exercises`
-  Update an exercise from a workout. 
+  - **Description**: Update an exercise from a workout. 
+  - **Authentication**: Required.
+  - **Request Body**:
+    ```json
+    {
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "sets": 5,
+      "repetitions": 5,
+      "weight": 6,
+      "exerciseId": 7,
+      "workoutId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+    }
+    ```
+  
 - **DELETE** `/workout-exercises/{workou_exercise_id}`
-  Delete an exercise from a workout. 
+  - **Description**: Delete an exercise from a workout. 
+  - **Authentication**: Required.
+    
+### Report
+- **GET** `/reports`
+  - **Description**: Retrieve a report of the recent workouts.
+  - **Authentication**: Required.
+    
 ## Useful Links
 - [Project detail](https://roadmap.sh/projects/fitness-workout-tracker)
+
+## License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
