@@ -7,7 +7,7 @@ using Workout.Application.Services.Interface;
 
 namespace WorkoutAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/reports")]
     [ApiController]
     [Authorize]
     public class ReportController : ControllerBase

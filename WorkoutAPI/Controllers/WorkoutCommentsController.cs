@@ -7,7 +7,7 @@ using Workout.Application.Services.Interface;
 
 namespace WorkoutAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/workout-comments")]
     [ApiController]
     [Authorize]
     public class WorkoutCommentsController : ControllerBase

@@ -9,7 +9,7 @@ using Workout.Domain.Entities;
 
 namespace WorkoutAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/workout-exercises")]
     [ApiController]
     [Authorize]
     public class WorkoutExerciseController : ControllerBase
