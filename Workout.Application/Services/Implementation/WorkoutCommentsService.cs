@@ -1,11 +1,5 @@
 ﻿using AutoMapper;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 using Workout.Application.Common.Dto;
 using Workout.Application.Common.Interfaces;
 using Workout.Application.Services.Interface;
@@ -68,18 +62,18 @@ namespace Workout.Application.Services.Implementation
             }
             return Guid.Parse(userId);
         }
-        private async Task<WorkoutPlan> CheckAccessToWorkout(Guid? workoutPlanId, Guid userId)
+        private async Task CheckAccessToWorkout(Guid? workoutPlanId, Guid userId)
         {
             WorkoutPlan workoutPlan = await _unitOfWork.workoutPlans.Get(wp => wp.Id == workoutPlanId && wp.UserId == userId);
             if (workoutPlan == null)
             {
                 throw new UnauthorizedAccessException();
             }
-            return workoutPlan;
+   
         }
-        private async Task<WorkoutComments> CheckAccess(Guid? workoutExerciseId, Guid userId)
+        private async Task<WorkoutComments> CheckAccess(Guid? workoutCommentId, Guid userId)
         {
-            WorkoutComments workoutComments = await _unitOfWork.workoutsComments.Get(wp => wp.Id == workoutExerciseId && wp.Workout.UserId == userId);
+            WorkoutComments workoutComments = await _unitOfWork.workoutsComments.Get(wp => wp.Id == workoutCommentId && wp.Workout.UserId == userId);
             if (workoutComments == null)
             {
                 throw new UnauthorizedAccessException();

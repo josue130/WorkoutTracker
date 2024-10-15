@@ -52,14 +52,14 @@ namespace Workout.Application.Services.Implementation
             _unitOfWork.workoutExercises.Update(workoutExercise);
             await _unitOfWork.Save();
         }
-        private async Task<WorkoutPlan> CheckAccessToWorkout(Guid? workoutPlanId, Guid userId)
+        private async Task CheckAccessToWorkout(Guid? workoutPlanId, Guid userId)
         {
             WorkoutPlan workoutPlan = await _unitOfWork.workoutPlans.Get(wp => wp.Id == workoutPlanId && wp.UserId == userId);
             if (workoutPlan == null)
             {
                 throw new UnauthorizedAccessException();
             }
-            return workoutPlan;
+  
         }
         private async Task<WorkoutExercise> CheckAccess(Guid? workoutExerciseId, Guid userId)
         {
