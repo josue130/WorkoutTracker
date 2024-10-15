@@ -17,7 +17,7 @@ This project involves creating a backend system for a workout tracker applicatio
 ## Usage
 
 ### Auth
-- **POST** `auth/login`
+- **POST** `/auth/login`
   - **Description**: Authenticates a user  and returns a JWT token.
   - **Request Body**:
     ```json
@@ -28,7 +28,7 @@ This project involves creating a backend system for a workout tracker applicatio
     ```
   - **Response**: JWT token on success.
     
-- **POST** `auth/register`
+- **POST** `/auth/register`
   - **Description**: Registers a new user in the system.
   - **Request Body**:
     ```json
@@ -40,7 +40,7 @@ This project involves creating a backend system for a workout tracker applicatio
     }
     ```
 ### Exercise
-- **GET** `exercises`
+- **GET** `/exercises`
     -  **Description** : Retrieve all exercises.
     -  **Authentication**: Required.
     
@@ -97,7 +97,7 @@ This project involves creating a backend system for a workout tracker applicatio
     }
     ```
   
-- **PUT** `/schedule-workouts`
+- **PUT** `/workout-schedules`
   - **Description**: Update a scheduled workout..
   - **Authentication**: Required.
   - **Request Body**:
