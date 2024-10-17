@@ -68,12 +68,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseMiddleware<CustomExceptionMiddleware>();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 ApplyMigration();
-app.UseMiddleware<CustomExceptionMiddleware>();
+
 app.MapControllers();
 
 app.Run();
