@@ -3,13 +3,25 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34525.116
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Workout.Domain", "Workout.Domain\Workout.Domain.csproj", "{D2DAEFF1-314D-4772-B54C-AB79A02E3497}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Workout.Domain", "Workout.Domain\Workout.Domain.csproj", "{D2DAEFF1-314D-4772-B54C-AB79A02E3497}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Workout.Application", "Workout.Application\Workout.Application.csproj", "{3A7EEAB2-3B37-48A6-AF8C-FF940AB0661C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Workout.Application", "Workout.Application\Workout.Application.csproj", "{3A7EEAB2-3B37-48A6-AF8C-FF940AB0661C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Workout.Infrastructure", "Workout.Infrastructure\Workout.Infrastructure.csproj", "{78950245-B8EB-4FFC-913F-2DECEDDFF191}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Workout.Infrastructure", "Workout.Infrastructure\Workout.Infrastructure.csproj", "{78950245-B8EB-4FFC-913F-2DECEDDFF191}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkoutAPI", "WorkoutAPI\WorkoutAPI.csproj", "{7BA4B6E1-DCD0-400E-AA01-0C9A1A800138}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WorkoutAPI", "WorkoutAPI\WorkoutAPI.csproj", "{7BA4B6E1-DCD0-400E-AA01-0C9A1A800138}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F26B6B71-ED17-494F-8D67-4CB0D9F268B2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{0383F6A3-C25C-40C9-AE6F-61752D216030}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "External", "External", "{AC647AC0-DABF-49C3-9E37-AE4B0CD24329}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{21BB3AD1-16C7-4F22-BDF3-666D99517712}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{1D117ACF-8A64-485E-9F82-01DFB4D501C7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainUnitTests", "DomainUnitTests\DomainUnitTests.csproj", "{851C3A1C-FB82-4DB3-9C24-2DA87A4AC063}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,9 +45,23 @@ Global
 		{7BA4B6E1-DCD0-400E-AA01-0C9A1A800138}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7BA4B6E1-DCD0-400E-AA01-0C9A1A800138}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7BA4B6E1-DCD0-400E-AA01-0C9A1A800138}.Release|Any CPU.Build.0 = Release|Any CPU
+		{851C3A1C-FB82-4DB3-9C24-2DA87A4AC063}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{851C3A1C-FB82-4DB3-9C24-2DA87A4AC063}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{851C3A1C-FB82-4DB3-9C24-2DA87A4AC063}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{851C3A1C-FB82-4DB3-9C24-2DA87A4AC063}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D2DAEFF1-314D-4772-B54C-AB79A02E3497} = {0383F6A3-C25C-40C9-AE6F-61752D216030}
+		{3A7EEAB2-3B37-48A6-AF8C-FF940AB0661C} = {0383F6A3-C25C-40C9-AE6F-61752D216030}
+		{78950245-B8EB-4FFC-913F-2DECEDDFF191} = {AC647AC0-DABF-49C3-9E37-AE4B0CD24329}
+		{7BA4B6E1-DCD0-400E-AA01-0C9A1A800138} = {AC647AC0-DABF-49C3-9E37-AE4B0CD24329}
+		{0383F6A3-C25C-40C9-AE6F-61752D216030} = {F26B6B71-ED17-494F-8D67-4CB0D9F268B2}
+		{AC647AC0-DABF-49C3-9E37-AE4B0CD24329} = {F26B6B71-ED17-494F-8D67-4CB0D9F268B2}
+		{1D117ACF-8A64-485E-9F82-01DFB4D501C7} = {21BB3AD1-16C7-4F22-BDF3-666D99517712}
+		{851C3A1C-FB82-4DB3-9C24-2DA87A4AC063} = {1D117ACF-8A64-485E-9F82-01DFB4D501C7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {75ADB0B8-D5A0-4ED9-BEAA-18F8D991298D}

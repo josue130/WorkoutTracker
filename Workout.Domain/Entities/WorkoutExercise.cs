@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Workout.Domain.Constants;
 
 namespace Workout.Domain.Entities
 {
@@ -22,9 +23,9 @@ namespace Workout.Domain.Entities
         public static WorkoutExercise Create(int exerciseId, Guid workoutId, int sets, int repetitions, double weight)
         {
 
-            if (sets <= 0) throw new ArgumentException("Sets must be greater than 0.");
-            if (repetitions <= 0) throw new ArgumentException("Repetitions must be greater than 0.");
-            if (weight < 0) throw new ArgumentException("Weight must be non-negative.");
+            if (sets <= 0) throw new ArgumentException(ErrorMessages.InvalidSets);
+            if (repetitions <= 0) throw new ArgumentException(ErrorMessages.InvalidRepetitions);
+            if (weight < 0) throw new ArgumentException(ErrorMessages.InvalidWeight);
 
             return new WorkoutExercise 
             {

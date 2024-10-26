@@ -17,5 +17,8 @@ namespace Workout.Domain.Constants
         public const string FullNameCannotBeEmpty = "Full name cannot be empty";
         public const string UserNameCharacters = "Username must be at least 3 characters long";
         public const string CommentsCannotBeEmpty = "Comment cannot be empty";
+        public const string InvalidSets = "Sets must be greater than 0.";
+        public const string InvalidRepetitions = "Repetitions must be greater than 0"; 
+        public const string InvalidWeight = "Weight must be non-negative.";
     }
 }
