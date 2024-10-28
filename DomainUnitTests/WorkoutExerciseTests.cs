@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Workout.Domain.Constants;
+﻿using Workout.Domain.Constants;
 using Workout.Domain.Entities;
 
 namespace DomainUnitTests

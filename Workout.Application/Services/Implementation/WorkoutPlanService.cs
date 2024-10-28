@@ -22,12 +22,12 @@ namespace Workout.Application.Services.Implementation
         {
             
             Guid userId = CheckUserId(user);
-            bool result = await CheckName(model.Name, userId);
-            if (result)
+            var existingPlan = await CheckName(model.Name, userId);
+            if (existingPlan != null)
             {
                 throw new WorkoutPlanNameAlreadyExistsException();
             }
-         
+
             WorkoutPlan workoutPlan = WorkoutPlan.Create(model.Name, model.Description, userId);
             await _unitOfWork.workoutPlans.Add(workoutPlan);
             await _unitOfWork.Save();
@@ -69,8 +69,8 @@ namespace Workout.Application.Services.Implementation
             WorkoutPlan data = await CheckAccess(model.Id, userId);
             if (data.Name != model.Name)
             {
-                bool result = await CheckName(model.Name, userId);
-                if (result)
+                var existingPlan = await CheckName(model.Name, userId);
+                if (existingPlan != null)
                 {
                     throw new WorkoutPlanNameAlreadyExistsException();
                 }
@@ -89,15 +89,9 @@ namespace Workout.Application.Services.Implementation
             }
             return workoutPlan;
         }
-        private async Task<bool> CheckName(string name, Guid userId)
+        private async Task<WorkoutPlan?> CheckName(string name, Guid userId)
         {
-            WorkoutPlan workoutPlan = await _unitOfWork.workoutPlans.Get(wp => wp.Name.ToLower() == name.ToLower()
-                               && wp.UserId == userId);
-            if (workoutPlan != null) 
-            {
-                return true;
-            }
-            return false;
+            return await _unitOfWork.workoutPlans.Get(wp => wp.Name.ToLower() == name.ToLower() && wp.UserId == userId);
         }
         private Guid CheckUserId(ClaimsPrincipal user)
         {
