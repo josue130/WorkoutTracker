@@ -15,16 +15,22 @@ namespace Workout.Domain.Entities
         [Required]
         public string Password { get; set; } = string.Empty;
 
+        public User(Guid id, string fullName, string email, string userName, string password)
+        {
+            Id = id;
+            FullName = fullName;
+            Email = email;
+            UserName = userName;
+            Password = password;
+        }
+
         public static User Create(string fullName, string email, string userName, string password)
         {
-            return new User
-            {
-                Id = Guid.NewGuid(),
-                FullName = fullName,
-                Email = email,
-                UserName = userName,
-                Password = password
-            };
+            return new User(Guid.NewGuid(), fullName, email, userName, password);
+        }
+        private User()
+        {
+            
         }
     }
 }
