@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Azure;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Workout.Application.Common.Dto;
 using Workout.Application.Services.Interface;
@@ -23,33 +24,48 @@ namespace WorkoutAPI.Controllers
         [HttpGet("{workout_id:guid}")]
         public async Task<IActionResult> Get(Guid workout_id)
         {
-            IEnumerable<WorkoutCommentsDto> data = await _workoutCommentsService.GetWorkoutCommentsByWorkoutId(workout_id, User);
-            _response.result = data;
-            return Ok(_response);
+            var response = await _workoutCommentsService.GetWorkoutCommentsByWorkoutId(workout_id, User);
+            if (response.IsFailure)
+            {
+                return BadRequest(response.Error);
+            }
+            return Ok(response.Values);
         }
 
 
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] WorkoutCommentsDto workoutCommentsDto)
         {
-            await _workoutCommentsService.AddWorkoutComment(workoutCommentsDto, User);
-            return Ok(_response);
+            var response = await _workoutCommentsService.AddWorkoutComment(workoutCommentsDto, User);
+            if (response.IsFailure)
+            {
+                return BadRequest(response.Error);
+            }
+            return Ok(response.Values);
         }
 
 
         [HttpPut]
         public async Task<IActionResult> Put([FromBody] WorkoutCommentsDto workoutCommentsDto)
         {
-            await _workoutCommentsService.UpdateWorkoutComment(workoutCommentsDto, User);
-            return Ok(_response);
+            var response = await _workoutCommentsService.UpdateWorkoutComment(workoutCommentsDto, User);
+            if (response.IsFailure)
+            {
+                return BadRequest(response.Error);
+            }
+            return Ok(response.Values);
         }
 
 
         [HttpDelete("{workout_comment_id:guid}")]
         public async Task<IActionResult> Delete(Guid workout_comment_id)
         {
-            await _workoutCommentsService.DeleteWorkoutComment(workout_comment_id, User);
-            return Ok(_response);
+            var response = await _workoutCommentsService.DeleteWorkoutComment(workout_comment_id, User);
+            if (response.IsFailure)
+            {
+                return BadRequest(response.Error);
+            }
+            return Ok(response.Values);
         }
     }
 }

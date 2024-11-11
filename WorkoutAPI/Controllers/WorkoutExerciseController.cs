@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Azure;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Workout.Application.Common.Dto;
 using Workout.Application.Services.Implementation;
@@ -24,29 +25,44 @@ namespace WorkoutAPI.Controllers
         [HttpGet("{workout_plan_id:Guid}")]
         public async Task<IActionResult> Get(Guid workout_plan_id)
         {
-            IEnumerable<WorkoutExerciseDto> data = await _workoutExerciseService.GetWorkoutExerciseById(workout_plan_id, User);
-            _response.result = data;
-            return Ok(_response);
+            var response = await _workoutExerciseService.GetWorkoutExerciseById(workout_plan_id, User);
+            if (response.IsFailure)
+            {
+                return BadRequest(response.Error);
+            }
+            return Ok(response.Values);
         }
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] WorkoutExerciseDto model)
         {
-            await _workoutExerciseService.AddWorkoutExercise(model,User);
-            return Ok(_response);
+            var response = await _workoutExerciseService.AddWorkoutExercise(model,User);
+            if (response.IsFailure)
+            {
+                return BadRequest(response.Error);
+            }
+            return Ok(response.Values);
         }
 
         [HttpPut]
         public async Task<IActionResult> Put([FromBody] WorkoutExerciseDto model)
         {
-            await _workoutExerciseService.UpdateWorkoutExercise(model, User);
-            return Ok(_response);
+            var response = await _workoutExerciseService.UpdateWorkoutExercise(model, User);
+            if (response.IsFailure)
+            {
+                return BadRequest(response.Error);
+            }
+            return Ok(response.Values);
         }
 
         [HttpDelete("{workout_exercise_id:Guid}")]
         public async Task<IActionResult> Delete(Guid workout_exercise_id)
         {
-            await _workoutExerciseService.DeleteWorkoutExercise(workout_exercise_id, User);
-            return Ok(_response);
+            var response = await _workoutExerciseService.DeleteWorkoutExercise(workout_exercise_id, User);
+            if (response.IsFailure)
+            {
+                return BadRequest(response.Error);
+            }
+            return Ok(response.Values);
         }
     }
 }

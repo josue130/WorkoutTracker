@@ -24,9 +24,12 @@ namespace WorkoutAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            IEnumerable<Exercise> data = await _exerciseService.GetAllExercises();
-            _response.result = data;
-            return Ok(_response);
+            var response = await _exerciseService.GetAllExercises();
+            if (response.IsFailure)
+            {
+                return BadRequest(response.Error);
+            }
+            return Ok(response.Values);
         }
 
        

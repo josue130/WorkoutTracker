@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Azure;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Workout.Application.Common.Dto;
 using Workout.Application.Services.Interface;
@@ -24,9 +25,12 @@ namespace WorkoutAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            IEnumerable<WorkoutPlanResponseDto> data = await _workoutPlanService.GenerateReport(User);
-            _response.result = data;
-            return Ok(_response);
+            var response = await _workoutPlanService.GenerateReport(User);
+            if (response.IsFailure)
+            {
+                return BadRequest(response.Error);
+            }
+            return Ok(response.Values);
         }
     }
 }

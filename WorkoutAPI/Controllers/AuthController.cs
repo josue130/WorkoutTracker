@@ -12,26 +12,31 @@ namespace WorkoutAPI.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-        private readonly ResponseDto _response;
         public AuthController(IAuthService authService)
         {
             _authService = authService;
-            _response = new();
-            
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto model)
         {
-            var loginResponse = await _authService.Login(model);
-            _response.result = loginResponse;
-            return Ok(_response);
+            var response = await _authService.Login(model);
+
+            if (response.IsFailure)
+            {
+                return BadRequest(response.Error);
+            }
+            return Ok(response.Values);
         }
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequestDto model)
         {
-            await _authService.Register(model);
-            return Ok(_response);
+            var response = await _authService.Register(model);
+            if (response.IsFailure)
+            {
+                return BadRequest(response.Error);
+            }
+            return Ok(response.Values);
         }
 
 

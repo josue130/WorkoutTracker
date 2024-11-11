@@ -23,30 +23,45 @@ namespace WorkoutAPI.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            IEnumerable<ScheduleWorkoutDto> data = await _scheduleWorkoutService.GetScheduleWorkoutsByUserId(User);
-            _response.result = data;
-            return Ok(_response);
+            var response = await _scheduleWorkoutService.GetScheduleWorkoutsByUserId(User);
+            if (response.IsFailure)
+            {
+                return BadRequest(response.Error);
+            }
+            return Ok(response.Values);
         }
 
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] ScheduleWorkoutDto scheduleWorkoutDto)
         {
-            await _scheduleWorkoutService.SetWorkoutSchedule(scheduleWorkoutDto, User);
-            return Ok(_response);
+            var response = await _scheduleWorkoutService.SetWorkoutSchedule(scheduleWorkoutDto, User);
+            if (response.IsFailure)
+            {
+                return BadRequest(response.Error);
+            }
+            return Ok(response.Values);
         }
 
         [HttpPut]
         public async Task<IActionResult> Put([FromBody] ScheduleWorkoutDto scheduleWorkoutDto)
         {
-            await _scheduleWorkoutService.UpdateScheduledWorkout(scheduleWorkoutDto, User);
-            return Ok(_response);
+            var response =  await _scheduleWorkoutService.UpdateScheduledWorkout(scheduleWorkoutDto, User);
+            if (response.IsFailure)
+            {
+                return BadRequest(response.Error);
+            }
+            return Ok(response.Values);
         }
 
         [HttpDelete("{schedule_workout_id:guid}")]
         public async Task<IActionResult> Delete(Guid schedule_workout_id)
         {
-            await _scheduleWorkoutService.DeleteScheduledWorkout(schedule_workout_id, User);
-            return Ok(_response);
+            var response =  await _scheduleWorkoutService.DeleteScheduledWorkout(schedule_workout_id, User);
+            if (response.IsFailure)
+            {
+                return BadRequest(response.Error);
+            }
+            return Ok(response.Values);
         }
     }
 }
