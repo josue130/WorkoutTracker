@@ -1,7 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System.Net;
 using Workout.Application.Common.Dto;
-using Workout.Domain.Exceptions;
 
 namespace WorkoutAPI.Middleware
 {
@@ -27,36 +26,21 @@ namespace WorkoutAPI.Middleware
                 await HandleExceptionAsync(httpContext, ex);
             }
         }
-        private Task HandleExceptionAsync(HttpContext context, Exception exception)
+        private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            context.Response.ContentType = "application/json";
-            var statusCode = exception switch
+            ExceptionResponse response = exception switch
             {
-                ArgumentNullException => HttpStatusCode.BadRequest,
-                ArgumentException => HttpStatusCode.BadRequest,
-                InvalidOperationException => HttpStatusCode.BadRequest,
-                UserNameOrPasswordIncorrectException => HttpStatusCode.BadRequest,
-                UserNameAlreadyExistsException => HttpStatusCode.Conflict,
-                WorkoutPlanNameAlreadyExistsException => HttpStatusCode.Conflict,
-                UnauthorizedAccessException => HttpStatusCode.Unauthorized,
-                _ => HttpStatusCode.InternalServerError
+                UnauthorizedAccessException => new ExceptionResponse(HttpStatusCode.Unauthorized, "Unauthorized."),
+                _ => new ExceptionResponse(HttpStatusCode.InternalServerError, "An unexpected error occurred.")
             };
 
-            context.Response.StatusCode = (int)statusCode;
-
-            var message = statusCode == HttpStatusCode.InternalServerError
-                ? "An unexpected error occurred."
-                : exception.Message;
+            context.Response.StatusCode = (int)response.StatusCode;
 
 
-            var result = JsonConvert.SerializeObject(new ResponseDto
-            {
-                code = context.Response.StatusCode,
-                isSuccess = false,
-                message = message,
-            }); ;
 
-            return context.Response.WriteAsync(result);
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = (int)response.StatusCode;
+            await context.Response.WriteAsJsonAsync(response);
         }
     }
 }
