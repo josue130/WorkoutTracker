@@ -3,21 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Workout.Domain.Constants;
 
 namespace Workout.Domain.ValueObjects
 {
     public record EmailObject
     {
-        public string Value { get; }
-        public EmailObject(string value)
+        public string Value { get; init; }
+        private EmailObject(string value) => Value = value;
+        public static EmailObject? Create(string value)
         {
-            if (string.IsNullOrWhiteSpace(value) || !System.Text.RegularExpressions.Regex.IsMatch(value, @"^[^@\s]+@[^@\s]+\.[^@\s]+$")) 
+            if (string.IsNullOrWhiteSpace(value) || !System.Text.RegularExpressions.Regex.IsMatch(value, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
             {
-                throw new ArgumentException(ErrorMessages.InvalidEmailFormat);
+
+                return null;
+
             }
-               
-            Value = value;
+
+            return new EmailObject(value);
         }
 
 
