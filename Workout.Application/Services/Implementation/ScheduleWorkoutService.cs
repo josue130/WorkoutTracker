@@ -2,6 +2,8 @@
 using System.Security.Claims;
 using Workout.Application.Common.Dto;
 using Workout.Application.Common.Interfaces;
+using Workout.Application.Common.Result;
+using Workout.Application.Errors;
 using Workout.Application.Services.Interface;
 using Workout.Domain.Entities;
 
@@ -16,40 +18,54 @@ namespace Workout.Application.Services.Implementation
             _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
-        public async Task DeleteScheduledWorkout(Guid scheduleWorkoutId, ClaimsPrincipal user)
+        public async Task<Result> DeleteScheduledWorkout(Guid scheduleWorkoutId, ClaimsPrincipal user)
         {
             Guid userId = CheckUserId(user);
             ScheduleWorkout scheduleWorkout = await CheckAccess(scheduleWorkoutId, userId);
             _unitOfWork.scheduleWorkouts.Remove(scheduleWorkout);
             await _unitOfWork.Save();
-            
+
+            return Result.Success("Scheduled workout deleted successfully.");
+
         }
 
-        public async Task<IEnumerable<ScheduleWorkoutDto>> GetScheduleWorkoutsByUserId(ClaimsPrincipal user)
+        public async Task<Result> GetScheduleWorkoutsByUserId(ClaimsPrincipal user)
         {
             Guid userId = CheckUserId(user);
             IEnumerable<ScheduleWorkout> scheduleWorkouts = await _unitOfWork.scheduleWorkouts.GetScheduleWorkouts(userId);
             IEnumerable<ScheduleWorkoutDto> scheduleWorkoutsDto = _mapper.Map<IEnumerable<ScheduleWorkoutDto>>(scheduleWorkouts);
-            return scheduleWorkoutsDto;
+            return Result.Success(scheduleWorkoutsDto);
+
         }
 
-        public async Task SetWorkoutSchedule(ScheduleWorkoutDto model, ClaimsPrincipal user)
+        public async Task<Result> SetWorkoutSchedule(ScheduleWorkoutDto model, ClaimsPrincipal user)
         {
             Guid userId = CheckUserId(user);
             await CheckAccessToWorkout(model.WorkoutId, userId);
+
+            if (model.ScheduledDate < DateTime.Today) return Result.Failure(ScheduleWorkoutError.InvalidDate);
+
             ScheduleWorkout scheduleWorkout = ScheduleWorkout.Create(model.ScheduledDate,model.WorkoutId);
             await _unitOfWork.scheduleWorkouts.Add(scheduleWorkout);
             await _unitOfWork.Save();
+
+            return Result.Success("Workout scheduled successfully.");
+
         }
 
-        public async Task UpdateScheduledWorkout(ScheduleWorkoutDto model, ClaimsPrincipal user)
+        public async Task<Result> UpdateScheduledWorkout(ScheduleWorkoutDto model, ClaimsPrincipal user)
         {
             Guid userId = CheckUserId(user);
             await CheckAccessToWorkout(model.WorkoutId, userId);
-            ScheduleWorkout scheduleWorkout = ScheduleWorkout.Create(model.ScheduledDate, model.WorkoutId);
-            scheduleWorkout.Id = (Guid)model.Id;
+
+            if (model.ScheduledDate < DateTime.Today) return Result.Failure(ScheduleWorkoutError.InvalidDate);
+
+            ScheduleWorkout scheduleWorkout = ScheduleWorkout.Update((Guid)model.Id,model.ScheduledDate, model.WorkoutId);
             _unitOfWork.scheduleWorkouts.Update(scheduleWorkout);
             await _unitOfWork.Save();
+
+            return Result.Success("Scheduled workout updated successfully.");
+
         }
 
         private Guid CheckUserId(ClaimsPrincipal user)
