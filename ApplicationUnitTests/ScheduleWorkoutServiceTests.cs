@@ -8,122 +8,154 @@ using System.Text;
 using System.Threading.Tasks;
 using Workout.Application.Common.Dto;
 using Workout.Application.Common.Interfaces;
+using Workout.Application.Errors;
 using Workout.Application.Services.Implementation;
+using Workout.Application.Services.Interface;
 using Workout.Domain.Entities;
 
 namespace ApplicationUnitTests
 {
     public class ScheduleWorkoutServiceTests
     {
-        /*
+        
         private readonly Mock<IUnitOfWork> _unitOfWorkMock;
         private readonly Mock<IMapper> _mapperMock;
-        private readonly ScheduleWorkoutService _service;
+        private readonly ScheduleWorkoutService _scheduleWorkoutService;
 
         public ScheduleWorkoutServiceTests()
         {
             _unitOfWorkMock = new Mock<IUnitOfWork>();
             _mapperMock = new Mock<IMapper>();
-            _service = new ScheduleWorkoutService(_unitOfWorkMock.Object, _mapperMock.Object);
+            _scheduleWorkoutService = new ScheduleWorkoutService(_unitOfWorkMock.Object, _mapperMock.Object);
+        }
+
+        private ClaimsPrincipal CreateUserClaimsPrincipal(Guid userId)
+        {
+            return new ClaimsPrincipal(new ClaimsIdentity(new[]
+            {
+            new Claim(ClaimTypes.NameIdentifier, userId.ToString())
+        }));
         }
 
         [Fact]
-        public async Task SetWorkoutSchedule_ShouldSucceed_WhenUserHasAccess()
+        public async Task SetWorkoutSchedule_WithPastDate_ShouldReturnFailureResult()
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var user = GetTestUser(userId);
-            var scheduleDto = new ScheduleWorkoutDto { WorkoutId = Guid.NewGuid(), ScheduledDate = DateTime.UtcNow };
-
+            var model = new ScheduleWorkoutDto { WorkoutId = Guid.NewGuid(), ScheduledDate = DateTime.Today.AddDays(-1) };
+            var user = CreateUserClaimsPrincipal(userId);
             _unitOfWorkMock.Setup(u => u.workoutPlans.Get(It.IsAny<Expression<Func<WorkoutPlan, bool>>>()))
-                           .ReturnsAsync(new WorkoutPlan { Id = scheduleDto.WorkoutId, UserId = userId });
-
-            _unitOfWorkMock.Setup(u => u.scheduleWorkouts.Add(It.IsAny<ScheduleWorkout>()));
-            _unitOfWorkMock.Setup(u => u.Save()).Returns(Task.CompletedTask);
-
+                .ReturnsAsync(new WorkoutPlan(model.WorkoutId, "", "", userId));
             // Act
-            await _service.SetWorkoutSchedule(scheduleDto, user);
+            var result = await _scheduleWorkoutService.SetWorkoutSchedule(model, user);
 
             // Assert
-            _unitOfWorkMock.Verify(u => u.scheduleWorkouts.Add(It.IsAny<ScheduleWorkout>()), Times.Once);
-            _unitOfWorkMock.Verify(u => u.Save(), Times.Once);
+            result.IsFailure.Should().BeTrue();
+            result.Error.Should().Be(ScheduleWorkoutError.InvalidDate);
         }
+
         [Fact]
-        public async Task DeleteScheduledWorkout_ShouldSucceed_WhenUserHasAccesse()
+        public async Task SetWorkoutSchedule_WithValidDate_ShouldReturnSuccessResult()
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var user = GetTestUser(userId);
-            var scheduleId = Guid.NewGuid();
+            var model = new ScheduleWorkoutDto { WorkoutId = Guid.NewGuid(), ScheduledDate = DateTime.Today.AddDays(1) };
+            var user = CreateUserClaimsPrincipal(userId);
+
+            _unitOfWorkMock.Setup(u => u.workoutPlans.Get(It.IsAny<Expression<Func<WorkoutPlan, bool>>>()))
+                .ReturnsAsync(new WorkoutPlan ( model.WorkoutId, "", "", userId));
+
+            _unitOfWorkMock.Setup(u => u.scheduleWorkouts.Add(It.IsAny<ScheduleWorkout>()))
+                           .Returns(Task.CompletedTask);
+
+            _unitOfWorkMock.Setup(u => u.Save()).Returns(Task.CompletedTask);
+            // Act
+            var result = await _scheduleWorkoutService.SetWorkoutSchedule(model, user);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Values.Should().Be("Workout scheduled successfully.");
+        }
+
+        [Fact]
+        public async Task DeleteScheduledWorkout_WithUnauthorizedUser_ShouldThrowUnauthorizedAccessException()
+        {
+            // Arrange
+            var scheduleWorkoutId = Guid.NewGuid();
+            var user = CreateUserClaimsPrincipal(Guid.NewGuid());
 
             _unitOfWorkMock.Setup(u => u.scheduleWorkouts.Get(It.IsAny<Expression<Func<ScheduleWorkout, bool>>>()))
-                           .ReturnsAsync(new ScheduleWorkout { Id = scheduleId, Workout = new WorkoutPlan { UserId = userId } });
-
-            _unitOfWorkMock.Setup(u => u.scheduleWorkouts.Remove(It.IsAny<ScheduleWorkout>()));
-            _unitOfWorkMock.Setup(u => u.Save()).Returns(Task.CompletedTask);
+                .ReturnsAsync((ScheduleWorkout)null);
 
             // Act
-            await _service.DeleteScheduledWorkout(scheduleId, user);
+            Func<Task> act = async () => await _scheduleWorkoutService.DeleteScheduledWorkout(scheduleWorkoutId, user);
 
             // Assert
-            _unitOfWorkMock.Verify(u => u.scheduleWorkouts.Remove(It.IsAny<ScheduleWorkout>()), Times.Once);
-            _unitOfWorkMock.Verify(u => u.Save(), Times.Once);
+            await act.Should().ThrowAsync<UnauthorizedAccessException>();
         }
+
         [Fact]
-        public async Task GetScheduleWorkoutsByUserId_ShouldReturnSchedules_WhenUserExists()
+        public async Task DeleteScheduledWorkout_WithAuthorizedUser_ShouldReturnSuccessResult()
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var user = GetTestUser(userId);
+            var scheduleWorkoutId = Guid.NewGuid();
+            var user = CreateUserClaimsPrincipal(userId);
+            var scheduleWorkout = ScheduleWorkout.Create(DateTime.Today.AddDays(1), Guid.NewGuid());
 
-            var schedules = new List<ScheduleWorkout>
-            {
-                new ScheduleWorkout { Id = Guid.NewGuid() },
-                new ScheduleWorkout { Id = Guid.NewGuid() }
-            };
+            _unitOfWorkMock.Setup(u => u.scheduleWorkouts.Get(It.IsAny<Expression<Func<ScheduleWorkout, bool>>>()))
+                .ReturnsAsync(scheduleWorkout);
+
+            // Act
+            var result = await _scheduleWorkoutService.DeleteScheduledWorkout(scheduleWorkoutId, user);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Values.Should().Be("Scheduled workout deleted successfully.");
+        }
+
+        [Fact]
+        public async Task GetScheduleWorkoutsByUserId_WithValidUser_ShouldReturnSuccessResult()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var user = CreateUserClaimsPrincipal(userId);
+            var scheduleWorkouts = new List<ScheduleWorkout>
+        {
+            ScheduleWorkout.Create(DateTime.Today.AddDays(1), Guid.NewGuid())
+        };
 
             _unitOfWorkMock.Setup(u => u.scheduleWorkouts.GetScheduleWorkouts(userId))
-                           .ReturnsAsync(schedules);
+                .ReturnsAsync(scheduleWorkouts);
 
-            _mapperMock.Setup(m => m.Map<IEnumerable<ScheduleWorkoutDto>>(It.IsAny<IEnumerable<ScheduleWorkout>>()))
-                       .Returns(new List<ScheduleWorkoutDto>());
+            var scheduleWorkoutsDto = new List<ScheduleWorkoutDto> { new ScheduleWorkoutDto() };
+            _mapperMock.Setup(m => m.Map<IEnumerable<ScheduleWorkoutDto>>(scheduleWorkouts)).Returns(scheduleWorkoutsDto);
 
             // Act
-            var result = await _service.GetScheduleWorkoutsByUserId(user);
+            var result = await _scheduleWorkoutService.GetScheduleWorkoutsByUserId(user);
 
             // Assert
-            result.Should().NotBeNull();
-            _unitOfWorkMock.Verify(u => u.scheduleWorkouts.GetScheduleWorkouts(userId), Times.Once);
+            result.IsSuccess.Should().BeTrue();
+            result.Values.Should().Be(scheduleWorkoutsDto);
         }
 
         [Fact]
-        public async Task UpdateScheduledWorkout_ShouldSucceed_WhenUserHasAccess()
+        public async Task UpdateScheduledWorkout_WithPastDate_ShouldReturnFailureResult()
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var user = GetTestUser(userId);
-            var scheduleDto = new ScheduleWorkoutDto { Id = Guid.NewGuid(), WorkoutId = Guid.NewGuid(), ScheduledDate = DateTime.UtcNow };
+            var model = new ScheduleWorkoutDto { Id = Guid.NewGuid(), WorkoutId = Guid.NewGuid(), ScheduledDate = DateTime.Today.AddDays(-1) };
+            var user = CreateUserClaimsPrincipal(userId);
 
             _unitOfWorkMock.Setup(u => u.workoutPlans.Get(It.IsAny<Expression<Func<WorkoutPlan, bool>>>()))
-                           .ReturnsAsync(new WorkoutPlan { Id = scheduleDto.WorkoutId, UserId = userId });
-
-            _unitOfWorkMock.Setup(u => u.scheduleWorkouts.Update(It.IsAny<ScheduleWorkout>()));
-            _unitOfWorkMock.Setup(u => u.Save()).Returns(Task.CompletedTask);
+                .ReturnsAsync(new WorkoutPlan(model.WorkoutId, "", "", userId));
 
             // Act
-            await _service.UpdateScheduledWorkout(scheduleDto, user);
+            var result = await _scheduleWorkoutService.UpdateScheduledWorkout(model, user);
 
             // Assert
-            _unitOfWorkMock.Verify(u => u.scheduleWorkouts.Update(It.IsAny<ScheduleWorkout>()), Times.Once);
-            _unitOfWorkMock.Verify(u => u.Save(), Times.Once);
+            result.IsFailure.Should().BeTrue();
+            result.Error.Should().Be(ScheduleWorkoutError.InvalidDate);
         }
-
-
-        private ClaimsPrincipal GetTestUser(Guid userId)
-        {
-            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, userId.ToString()) };
-            return new ClaimsPrincipal(new ClaimsIdentity(claims));
-        }
-        */
     }
 }

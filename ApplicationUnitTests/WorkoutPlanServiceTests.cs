@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using System.Security.Claims;
 using Workout.Application.Common.Dto;
 using Workout.Application.Common.Interfaces;
+using Workout.Application.Errors;
 using Workout.Application.Services.Implementation;
 using Workout.Application.Services.Interface;
 using Workout.Domain.Entities;
@@ -11,161 +12,162 @@ namespace ApplicationUnitTests
 {
     public class WorkoutPlanServiceTests
     {
-        /*
+        
         private readonly Mock<IUnitOfWork> _unitOfWorkMock;
         private readonly Mock<IMapper> _mapperMock;
-        private readonly WorkoutPlanService _service;
+        private readonly WorkoutPlanService _workoutPlanService;
 
         public WorkoutPlanServiceTests()
         {
             _unitOfWorkMock = new Mock<IUnitOfWork>();
             _mapperMock = new Mock<IMapper>();
-            _service = new WorkoutPlanService(_unitOfWorkMock.Object, _mapperMock.Object);
+            _workoutPlanService = new WorkoutPlanService(_unitOfWorkMock.Object, _mapperMock.Object);
         }
 
 
         [Fact]
-        public async Task AddWorkoutPlan_ShouldSucceed_WhenNameIsUnique()
+        public async Task AddWorkoutPlan_WithInvalidInputs_ShouldReturnFailureResult()
         {
             // Arrange
-            var userId = Guid.NewGuid();
-            var user = GetTestUser(userId);
-            var workoutDto = new WorkoutPlanDto { Name = "Plan A", Description = "Desc" };
-
-            _unitOfWorkMock.Setup(u => u.workoutPlans.Get(It.IsAny<Expression<Func<WorkoutPlan, bool>>>()))
-                           .ReturnsAsync((WorkoutPlan)null); 
-
-            _unitOfWorkMock.Setup(u => u.workoutPlans.Add(It.IsAny<WorkoutPlan>()))
-                           .Returns(Task.CompletedTask);
-
-            _unitOfWorkMock.Setup(u => u.Save()).Returns(Task.CompletedTask);
+            var model = new WorkoutPlanDto { Name = "", Description = "" };
+            var user = CreateUserClaimsPrincipal(Guid.NewGuid());
 
             // Act
-            await _service.AddWorkoutPlan(workoutDto, user);
+            var result = await _workoutPlanService.AddWorkoutPlan(model, user);
 
             // Assert
-            _unitOfWorkMock.Verify(u => u.workoutPlans.Add(It.IsAny<WorkoutPlan>()), Times.Once);
-            _unitOfWorkMock.Verify(u => u.Save(), Times.Once);
+            result.IsFailure.Should().BeTrue();
+            result.Error.Should().Be(WorkoutPlanError.InvalidInputs);
         }
 
         [Fact]
-        public async Task AddWorkoutPlan_ShouldThrowException_WhenNameAlreadyExists()
+        public async Task AddWorkoutPlan_WithExistingName_ShouldReturnFailureResult()
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var user = GetTestUser(userId);
-            var workoutDto = new WorkoutPlanDto { Name = "Plan A", Description = "Desc" };
-
-            var existingWorkout = new WorkoutPlan { Name = "Plan A", UserId = userId };
+            var model = new WorkoutPlanDto { Name = "PlanName", Description = "Description" };
+            var existingWorkout = new WorkoutPlan (  Guid.NewGuid(),"PlanName", "Description", userId );
+            var user = CreateUserClaimsPrincipal(userId);
 
             _unitOfWorkMock.Setup(u => u.workoutPlans.Get(It.IsAny<Expression<Func<WorkoutPlan, bool>>>()))
-                           .ReturnsAsync(existingWorkout);
+                .ReturnsAsync(existingWorkout);
 
             // Act
-            Func<Task> act = async () => await _service.AddWorkoutPlan(workoutDto, user);
+            var result = await _workoutPlanService.AddWorkoutPlan(model, user);
 
             // Assert
-            await act.Should().ThrowAsync<WorkoutPlanNameAlreadyExistsException>();
-            _unitOfWorkMock.Verify(u => u.workoutPlans.Add(It.IsAny<WorkoutPlan>()), Times.Never);
-            _unitOfWorkMock.Verify(u => u.Save(), Times.Never);
+            result.IsFailure.Should().BeTrue();
+            result.Error.Should().Be(WorkoutPlanError.WorkoutPlanNameAlreadyExists);
         }
+
         [Fact]
-        public async Task UpdateWorkoutPlan_ShouldThrowException_WhenTheNewNameAlreadyExists() 
+        public async Task AddWorkoutPlan_WithValidInputs_ShouldReturnSuccessResult()
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var user = GetTestUser(userId);
-            var workoutDto = new WorkoutPlanDto { Id = Guid.NewGuid(), Name = "Plan B", Description = "Desc", UserId = userId };
-
-            var currentPlan = new WorkoutPlan { Id = (Guid)workoutDto.Id, Name = "Plan A", UserId = userId };
-            var existingPlan = new WorkoutPlan { Name = "Plan B", UserId = userId }; 
+            var model = new WorkoutPlanDto { Name = "New Plan", Description = "Plan Description" };
+            var user = CreateUserClaimsPrincipal(userId);
 
             _unitOfWorkMock.Setup(u => u.workoutPlans.Get(It.IsAny<Expression<Func<WorkoutPlan, bool>>>()))
-                           .ReturnsAsync((Expression<Func<WorkoutPlan, bool>> predicate) =>
-                                predicate.Compile()(existingPlan) ? existingPlan : currentPlan);
+                .ReturnsAsync((WorkoutPlan)null);
 
             // Act
-            Func<Task> act = async () => await _service.UpdateWorkoutPlan(workoutDto, user);
+            var result = await _workoutPlanService.AddWorkoutPlan(model, user);
 
             // Assert
-            await act.Should().ThrowAsync<WorkoutPlanNameAlreadyExistsException>();
-            _unitOfWorkMock.Verify(u => u.workoutPlans.Add(It.IsAny<WorkoutPlan>()), Times.Never);
-            _unitOfWorkMock.Verify(u => u.Save(), Times.Never);
-        }
-        [Fact]
-        public async Task UpdateWorkoutPlan_ShouldSucceed_WhenNameIsUnique()
-        {
-            // Arrange
-            var userId = Guid.NewGuid();
-            var user = GetTestUser(userId);
-            var workoutDto = new WorkoutPlanDto { Id = Guid.NewGuid(), Name = "Plan B", Description = "Desc", UserId = userId };
-
-            var currentPlan = new WorkoutPlan { Id = (Guid)workoutDto.Id, Name = "Plan A", UserId = userId };
-
-            _unitOfWorkMock.Setup(u => u.workoutPlans.Get(It.IsAny<Expression<Func<WorkoutPlan, bool>>>()))
-                           .ReturnsAsync((Expression<Func<WorkoutPlan, bool>> predicate) =>
-                                predicate.Compile()(currentPlan) ? currentPlan : null);
-
-            // Act
-            await _service.UpdateWorkoutPlan(workoutDto, user);
-
-            // Assert
-            _unitOfWorkMock.Verify(u => u.workoutPlans.Update(It.IsAny<WorkoutPlan>()), Times.Once);
-            _unitOfWorkMock.Verify(u => u.Save(), Times.Once);
+            result.IsSuccess.Should().BeTrue();
+            result.Values.Should().Be("WorkoutPlan added successfully.");
         }
 
         [Fact]
-        public async Task DeleteWorkoutPlan_ShouldSucceed_WhenUserHasAccess()
+        public async Task DeleteWorkoutPlan_WithUnauthorizedUser_ShouldThrowUnauthorizedAccessException()
         {
             // Arrange
-            var userId = Guid.NewGuid();
-            var user = GetTestUser(userId);
             var workoutPlanId = Guid.NewGuid();
-            var workoutPlan = new WorkoutPlan { Id = workoutPlanId, UserId = userId };
+            var user = CreateUserClaimsPrincipal(Guid.NewGuid());
 
             _unitOfWorkMock.Setup(u => u.workoutPlans.Get(It.IsAny<Expression<Func<WorkoutPlan, bool>>>()))
-                           .ReturnsAsync(workoutPlan);
-
-            _unitOfWorkMock.Setup(u => u.workoutPlans.Remove(workoutPlan));
-                           
-
-            _unitOfWorkMock.Setup(u => u.Save()).Returns(Task.CompletedTask);
+                .ReturnsAsync((WorkoutPlan)null);
 
             // Act
-            await _service.DeleteWorkoutPlan(workoutPlanId, user);
-
-            // Assert
-            _unitOfWorkMock.Verify(u => u.workoutPlans.Remove(workoutPlan), Times.Once);
-            _unitOfWorkMock.Verify(u => u.Save(), Times.Once);
-        }
-        [Fact]
-        public async Task DeleteWorkoutPlan_ShouldThrowException_WhenUserHasNoAccess()
-        {
-            // Arrange
-            var userId = Guid.NewGuid();
-            var user = GetTestUser(userId);
-            var workoutPlanId = Guid.NewGuid();
-
-            _unitOfWorkMock.Setup(u => u.workoutPlans.Get(It.IsAny<Expression<Func<WorkoutPlan, bool>>>()))
-                           .ReturnsAsync((WorkoutPlan)null);
-
-            // Act
-            Func<Task> act = async () => await _service.DeleteWorkoutPlan(workoutPlanId, user);
+            Func<Task> act = async () => await _workoutPlanService.DeleteWorkoutPlan(workoutPlanId, user);
 
             // Assert
             await act.Should().ThrowAsync<UnauthorizedAccessException>();
-            _unitOfWorkMock.Verify(u => u.workoutPlans.Remove(It.IsAny<WorkoutPlan>()), Times.Never);
-            _unitOfWorkMock.Verify(u => u.Save(), Times.Never);
         }
 
+        [Fact]
+        public async Task DeleteWorkoutPlan_WithAuthorizedUser_ShouldReturnSuccessResult()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var workoutPlanId = Guid.NewGuid();
+            var user = CreateUserClaimsPrincipal(userId);
+            var workoutPlan = WorkoutPlan.Create("Plan", "Description", userId);
 
-        private ClaimsPrincipal GetTestUser(Guid userId)
+            _unitOfWorkMock.Setup(u => u.workoutPlans.Get(It.IsAny<Expression<Func<WorkoutPlan, bool>>>()))
+                .ReturnsAsync(workoutPlan);
+
+            // Act
+            var result = await _workoutPlanService.DeleteWorkoutPlan(workoutPlanId, user);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Values.Should().Be("WorkoutPlan deleted successfully");
+        }
+
+        [Fact]
+        public async Task GenerateReport_WithValidUser_ShouldReturnSuccessResult()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var user = CreateUserClaimsPrincipal(userId);
+            var workoutPlans = new List<WorkoutPlanResponseDto> { new WorkoutPlanResponseDto() };
+
+            _unitOfWorkMock.Setup(u => u.workoutPlans.GenerateReport(userId))
+                .ReturnsAsync(workoutPlans);
+
+            // Act
+            var result = await _workoutPlanService.GenerateReport(user);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Values.Should().Be(workoutPlans);
+        }
+
+        [Fact]
+        public async Task GetByWorkouPlanId_WithValidIdAndUser_ShouldReturnSuccessResult()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var workoutPlanId = Guid.NewGuid();
+            var user = CreateUserClaimsPrincipal(userId);
+            var workoutPlan = WorkoutPlan.Create("Plan", "Description", userId);
+
+            _unitOfWorkMock.Setup(u => u.workoutPlans.Get(It.IsAny<Expression<Func<WorkoutPlan, bool>>>()))
+                .ReturnsAsync(workoutPlan);
+
+            var workoutPlanDto = new WorkoutPlanDto();
+            _mapperMock.Setup(m => m.Map<WorkoutPlanDto>(workoutPlan)).Returns(workoutPlanDto);
+
+            // Act
+            var result = await _workoutPlanService.GetByWorkouPlanId(workoutPlanId, user);
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Values.Should().Be(workoutPlanDto);
+        }
+
+        
+
+        private ClaimsPrincipal CreateUserClaimsPrincipal(Guid userId)
         {
             return new ClaimsPrincipal(new ClaimsIdentity(new[]
             {
             new Claim(ClaimTypes.NameIdentifier, userId.ToString())
         }));
         }
-        */
+
+        
     }
 }

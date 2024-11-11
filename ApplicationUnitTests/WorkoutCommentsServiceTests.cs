@@ -9,63 +9,62 @@ using System.Text;
 using System.Threading.Tasks;
 using Workout.Application.Common.Dto;
 using Workout.Application.Common.Interfaces;
+using Workout.Application.Errors;
 using Workout.Application.Services.Implementation;
+using Workout.Application.Services.Interface;
 using Workout.Domain.Entities;
 
 namespace ApplicationUnitTests
 {
     public class WorkoutCommentsServiceTests
     {
-        /*
+
         private Mock<IUnitOfWork> _unitOfWorkMock;
         private Mock<IMapper> _mapperMock;
-        private WorkoutCommentsService _service;
+        private WorkoutCommentsService _workoutCommentsService;
         public WorkoutCommentsServiceTests()
         {
             _unitOfWorkMock = new Mock<IUnitOfWork>();
             _mapperMock = new Mock<IMapper>();
-            _service = new WorkoutCommentsService(_unitOfWorkMock.Object, _mapperMock.Object);
+            _workoutCommentsService = new WorkoutCommentsService(_unitOfWorkMock.Object, _mapperMock.Object);
+        }
+        private ClaimsPrincipal CreateUserClaimsPrincipal(Guid userId)
+        {
+            return new ClaimsPrincipal(new ClaimsIdentity(new[]
+            {
+            new Claim(ClaimTypes.NameIdentifier, userId.ToString())
+        }));
         }
 
         [Fact]
-        public async Task GetWorkoutCommentsByWorkoutId_ShouldReturnComments_WhenUserHasAccess()
+        public async Task AddWorkoutComment_WithEmptyComment_ShouldReturnFailureResult()
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var user = GetTestUser(userId);
-            var workoutId = Guid.NewGuid();
-            var comments = new List<WorkoutComments> { new WorkoutComments { WorkoutId = workoutId, Comment = "TEST" } };
-
+            var model = new WorkoutCommentsDto { WorkoutId = Guid.NewGuid(), Comment = "" };
+            var user = CreateUserClaimsPrincipal(userId);
             _unitOfWorkMock.Setup(u => u.workoutPlans.Get(It.IsAny<Expression<Func<WorkoutPlan, bool>>>()))
-                           .ReturnsAsync(new WorkoutPlan { Id = workoutId, UserId = userId });
+                .ReturnsAsync(new WorkoutPlan(model.WorkoutId, "", "", userId));
 
-            _unitOfWorkMock.Setup(u => u.workoutsComments.GetWorkoutComments(workoutId))
-                           .ReturnsAsync(comments);
-
-            _mapperMock.Setup(m => m.Map<IEnumerable<WorkoutCommentsDto>>(comments))
-                       .Returns(new List<WorkoutCommentsDto>());
 
             // Act
-            var result = await _service.GetWorkoutCommentsByWorkoutId(workoutId, user);
+            var result = await _workoutCommentsService.AddWorkoutComment(model, user);
 
             // Assert
-            result.Should().NotBeNull();
-            _unitOfWorkMock.Verify(u => u.workoutsComments.GetWorkoutComments(workoutId), Times.Once);
+            result.IsFailure.Should().BeTrue();
+            result.Error.Should().Be(CommentsError.CommentsCannotBeEmpty);
         }
 
-
-
         [Fact]
-        public async Task AddWorkoutComment_ShouldSucceed_WhenUserHasAccess()
+        public async Task AddWorkoutComment_WithValidInputs_ShouldReturnSuccessResult()
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var user = GetTestUser(userId);
-            var commentDto = new WorkoutCommentsDto { WorkoutId = Guid.NewGuid(), Comment = "TEST" };
+            var model = new WorkoutCommentsDto { WorkoutId = Guid.NewGuid(), Comment = "Great workout!" };
+            var user = CreateUserClaimsPrincipal(userId);
 
             _unitOfWorkMock.Setup(u => u.workoutPlans.Get(It.IsAny<Expression<Func<WorkoutPlan, bool>>>()))
-                           .ReturnsAsync(new WorkoutPlan { Id = commentDto.WorkoutId, UserId = userId });
-
+                .ReturnsAsync(new WorkoutPlan (  model.WorkoutId,"","",  userId ));
 
             _unitOfWorkMock.Setup(u => u.workoutsComments.Add(It.IsAny<WorkoutComments>()))
                            .Returns(Task.CompletedTask);
@@ -73,98 +72,91 @@ namespace ApplicationUnitTests
             _unitOfWorkMock.Setup(u => u.Save()).Returns(Task.CompletedTask);
 
             // Act
-            await _service.AddWorkoutComment(commentDto, user);
+            var result = await _workoutCommentsService.AddWorkoutComment(model, user);
 
             // Assert
-            _unitOfWorkMock.Verify(u => u.workoutsComments.Add(It.IsAny<WorkoutComments>()), Times.Once);
-            _unitOfWorkMock.Verify(u => u.Save(), Times.Once);
+            result.IsSuccess.Should().BeTrue();
+            result.Values.Should().Be("Comment added successfully");
         }
+
         [Fact]
-        public async Task AddWorkoutComment_ShouldThrowUnauthorizedException_WhenUserHasNoAccess()
+        public async Task DeleteWorkoutComment_WithUnauthorizedUser_ShouldThrowUnauthorizedAccessException()
         {
             // Arrange
-            var userId = Guid.NewGuid();
-            var user = GetTestUser(userId);
-            var commentDto = new WorkoutCommentsDto { WorkoutId = Guid.NewGuid(), Comment = "TEST" };
+            var workoutCommentId = Guid.NewGuid();
+            var user = CreateUserClaimsPrincipal(Guid.NewGuid());
 
-            _unitOfWorkMock.Setup(u => u.workoutPlans.Get(It.IsAny<Expression<Func<WorkoutPlan, bool>>>()))
-                           .ReturnsAsync((WorkoutPlan)null);
+            _unitOfWorkMock.Setup(u => u.workoutsComments.Get(It.IsAny<Expression<Func<WorkoutComments, bool>>>()))
+                .ReturnsAsync((WorkoutComments)null);
 
             // Act
-            Func<Task> act = async () => await _service.AddWorkoutComment(commentDto, user);
+            Func<Task> act = async () => await _workoutCommentsService.DeleteWorkoutComment(workoutCommentId, user);
 
             // Assert
             await act.Should().ThrowAsync<UnauthorizedAccessException>();
-            _unitOfWorkMock.Verify(u => u.Save(), Times.Never);
         }
+
         [Fact]
-        public async Task DeleteWorkoutComment_ShouldSucceed_WhenUserHasAccess()
+        public async Task DeleteWorkoutComment_WithAuthorizedUser_ShouldReturnSuccessResult()
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var user = GetTestUser(userId);
-            var commentId = Guid.NewGuid();
+            var workoutCommentId = Guid.NewGuid();
+            var user = CreateUserClaimsPrincipal(userId);
+            var workoutComment = WorkoutComments.Create(Guid.NewGuid(), "Nice session");
 
             _unitOfWorkMock.Setup(u => u.workoutsComments.Get(It.IsAny<Expression<Func<WorkoutComments, bool>>>()))
-                           .ReturnsAsync(new WorkoutComments { Id = commentId, Workout = new WorkoutPlan { UserId = userId } });
+                .ReturnsAsync(workoutComment);
 
             // Act
-            await _service.DeleteWorkoutComment(commentId, user);
+            var result = await _workoutCommentsService.DeleteWorkoutComment(workoutCommentId, user);
 
             // Assert
-            _unitOfWorkMock.Verify(u => u.workoutsComments.Remove(It.IsAny<WorkoutComments>()), Times.Once);
-            _unitOfWorkMock.Verify(u => u.Save(), Times.Once);
+            result.IsSuccess.Should().BeTrue();
+            result.Values.Should().Be("Comment deleted successfully");
         }
 
         [Fact]
-        public async Task DeleteWorkoutComment_ShouldThrowUnauthorizedException_WhenUserHasNoAccess()
+        public async Task GetWorkoutCommentsByWorkoutId_WithValidUser_ShouldReturnSuccessResult()
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var user = GetTestUser(userId);
-            var commentId = Guid.NewGuid();
+            var workoutId = Guid.NewGuid();
+            var user = CreateUserClaimsPrincipal(userId);
+            var workoutComments = new List<WorkoutComments>{WorkoutComments.Create(workoutId, "Nice session")};
 
-            _unitOfWorkMock.Setup(u => u.workoutsComments.Get(It.IsAny<Expression<Func<WorkoutComments, bool>>>()))
-                           .ReturnsAsync((WorkoutComments)null);
-
-            // Act
-            Func<Task> act = async () => await _service.DeleteWorkoutComment(commentId, user);
-
-            // Assert
-            await act.Should().ThrowAsync<UnauthorizedAccessException>();
-            _unitOfWorkMock.Verify(u => u.Save(), Times.Never);
-        }
-
-        [Fact]
-        public async Task UpdateWorkoutComment_ShouldSucceed_WhenUserHasAccess()
-        {
-            // Arrange
-            var userId = Guid.NewGuid();
-            var user = GetTestUser(userId);
-            var commentDto = new WorkoutCommentsDto { Id = Guid.NewGuid(), WorkoutId = Guid.NewGuid(), Comment = "TEST" };
-
+            _unitOfWorkMock.Setup(u => u.workoutsComments.GetWorkoutComments(workoutId))
+                .ReturnsAsync(workoutComments);
             _unitOfWorkMock.Setup(u => u.workoutPlans.Get(It.IsAny<Expression<Func<WorkoutPlan, bool>>>()))
-                           .ReturnsAsync(new WorkoutPlan { Id = commentDto.WorkoutId, UserId = userId });
+                .ReturnsAsync(new WorkoutPlan(workoutId, "", "", userId));
 
-
-            _unitOfWorkMock.Setup(u => u.workoutsComments.Update(It.IsAny<WorkoutComments>()));
-
-            _unitOfWorkMock.Setup(u => u.Save()).Returns(Task.CompletedTask);
+            var workoutCommentsDto = new List<WorkoutCommentsDto> { new WorkoutCommentsDto() };
+            _mapperMock.Setup(m => m.Map<IEnumerable<WorkoutCommentsDto>>(workoutComments)).Returns(workoutCommentsDto);
 
             // Act
-            await _service.UpdateWorkoutComment(commentDto, user);
+            var result = await _workoutCommentsService.GetWorkoutCommentsByWorkoutId(workoutId, user);
 
             // Assert
-            _unitOfWorkMock.Verify(u => u.workoutsComments.Update(It.IsAny<WorkoutComments>()), Times.Once);
-            _unitOfWorkMock.Verify(u => u.Save(), Times.Once);
+            result.IsSuccess.Should().BeTrue();
+            result.Values.Should().Be(workoutCommentsDto);
         }
 
-
-        private ClaimsPrincipal GetTestUser(Guid userId)
+        [Fact]
+        public async Task UpdateWorkoutComment_WithEmptyComment_ShouldReturnFailureResult()
         {
-            var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, userId.ToString()) };
-            return new ClaimsPrincipal(new ClaimsIdentity(claims));
+            // Arrange
+            var userId = Guid.NewGuid();
+            var model = new WorkoutCommentsDto { Id = Guid.NewGuid(), WorkoutId = Guid.NewGuid(), Comment = "" };
+            var user = CreateUserClaimsPrincipal(userId);
+            _unitOfWorkMock.Setup(u => u.workoutPlans.Get(It.IsAny<Expression<Func<WorkoutPlan, bool>>>()))
+               .ReturnsAsync(new WorkoutPlan(model.WorkoutId, "", "", userId));
+            // Act
+            var result = await _workoutCommentsService.UpdateWorkoutComment(model, user);
+
+
+            // Assert
+            result.IsFailure.Should().BeTrue();
+            result.Error.Should().Be(CommentsError.CommentsCannotBeEmpty);
         }
-        */
     }
 }
