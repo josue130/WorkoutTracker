@@ -18,17 +18,38 @@ namespace Workout.Domain.Entities
 
         public static WorkoutPlan Create(string name, string description, Guid userId)
         {
-            WorkoutPlanNameObject NameObj = new WorkoutPlanNameObject(name);
-            WorkoutPlanDescriptionObject DescriptionObj = new WorkoutPlanDescriptionObject(description);
            
             return new WorkoutPlan
             {
                 Id = Guid.NewGuid(),
-                Name = NameObj.value,
-                Description = DescriptionObj.value,
+                Name = name,
+                Description = description,
                 UserId = userId
             };
         }
-        
+        public static WorkoutPlan Update(Guid id,string name, string description, Guid userId)
+        {
+
+            return new WorkoutPlan
+            {
+                Id = id,
+                Name = name,
+                Description = description,
+                UserId = userId
+            };
+        }
+
+        public WorkoutPlan(Guid id, string name, string description, Guid userId)
+        {
+            Id = id;
+            Name = name;
+            Description = description;
+            UserId = userId;
+        }
+        private WorkoutPlan()
+        {
+            
+        }
+
     }
 }

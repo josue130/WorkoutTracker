@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Workout.Domain.Constants;
+
 
 namespace Workout.Domain.Entities
 {
@@ -11,17 +11,12 @@ namespace Workout.Domain.Entities
         [ForeignKey("WorkoutId")]
         public virtual WorkoutPlan Workout { get; set; } = null!;
         [Required]
-        public string Comment { get; set; }
+        public string Comment { get; set; } = string.Empty;
         [Required]
         public DateTime Date { get; set; }
 
         public static WorkoutComments Create(Guid workoutId, string comment)
         {
-  
-            if (string.IsNullOrWhiteSpace(comment))
-            {
-                throw new ArgumentException(ErrorMessages.CommentsCannotBeEmpty);
-            }
             return new WorkoutComments
             {
                 Id = Guid.NewGuid(),
@@ -30,6 +25,28 @@ namespace Workout.Domain.Entities
                 Date = DateTime.Now
             };
 
+        }
+        public static WorkoutComments Update(Guid id,Guid workoutId, string comment)
+        {
+            return new WorkoutComments
+            {
+                Id = id,
+                WorkoutId = workoutId,
+                Comment = comment,
+                Date = DateTime.Now
+            };
+
+        }
+        public WorkoutComments(Guid id, Guid workoutId, string comment,DateTime date)
+        {
+            Id = id;
+            WorkoutId = workoutId;
+            Comment = comment;
+            Date = date;
+        }
+        private WorkoutComments()
+        {
+            
         }
     }
 }

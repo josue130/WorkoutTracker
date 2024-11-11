@@ -17,15 +17,12 @@ namespace Workout.Domain.Entities
 
         public static User Create(string fullName, string email, string userName, string password)
         {
-            FullNameObject FullNameObj = new FullNameObject(fullName);
-            EmailObject EmailObj = new EmailObject(email);
-            UserNameObject UserNameObj = new UserNameObject(userName);
             return new User
             {
                 Id = Guid.NewGuid(),
-                FullName = FullNameObj.Value,
-                Email = EmailObj.Value,
-                UserName = UserNameObj.Value,
+                FullName = fullName,
+                Email = email,
+                UserName = userName,
                 Password = password
             };
         }

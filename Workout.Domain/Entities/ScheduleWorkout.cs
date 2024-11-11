@@ -11,15 +11,37 @@ namespace Workout.Domain.Entities
         [ForeignKey("WorkoutId")]
         public virtual WorkoutPlan Workout { get; set; } = null!;
 
+        public ScheduleWorkout(Guid id, DateTime scheduledDate, Guid workoutId)
+        {
+            Id = id;
+            ScheduledDate = scheduledDate;
+            WorkoutId = workoutId;
+        }
+
+        private ScheduleWorkout()
+        {
+            
+        }
+
+
         public static ScheduleWorkout Create(DateTime scheduledDate, Guid workoutId)
         {
-            DateObject date = new DateObject(scheduledDate);
             return new ScheduleWorkout
             {
                 Id= Guid.NewGuid(),
-                ScheduledDate = date.Value,
+                ScheduledDate = scheduledDate,
                 WorkoutId = workoutId
             };
         }
+        public static ScheduleWorkout Update(Guid id,DateTime scheduledDate, Guid workoutId)
+        {
+            return new ScheduleWorkout
+            {
+                Id = id,
+                ScheduledDate = scheduledDate,
+                WorkoutId = workoutId
+            };
+        }
+
     }
 }
