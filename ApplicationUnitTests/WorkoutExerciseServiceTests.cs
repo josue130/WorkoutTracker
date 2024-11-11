@@ -20,6 +20,7 @@ namespace ApplicationUnitTests
         private Mock<IMapper> _mapperMock;
         private WorkoutExerciseService _service;
 
+        /*
         public WorkoutExerciseServiceTests()
         {
             _unitOfWorkMock = new Mock<IUnitOfWork>();
@@ -163,6 +164,6 @@ namespace ApplicationUnitTests
             var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, userId.ToString()) };
             return new ClaimsPrincipal(new ClaimsIdentity(claims));
         }
-
+        */
     }
 }

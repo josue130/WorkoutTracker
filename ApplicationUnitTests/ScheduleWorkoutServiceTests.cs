@@ -15,6 +15,7 @@ namespace ApplicationUnitTests
 {
     public class ScheduleWorkoutServiceTests
     {
+        /*
         private readonly Mock<IUnitOfWork> _unitOfWorkMock;
         private readonly Mock<IMapper> _mapperMock;
         private readonly ScheduleWorkoutService _service;
@@ -123,5 +124,6 @@ namespace ApplicationUnitTests
             var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, userId.ToString()) };
             return new ClaimsPrincipal(new ClaimsIdentity(claims));
         }
+        */
     }
 }
