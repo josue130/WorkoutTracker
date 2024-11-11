@@ -1,5 +1,6 @@
 ﻿
 using Workout.Application.Common.Interfaces;
+using Workout.Application.Common.Result;
 using Workout.Application.Services.Interface;
 using Workout.Domain.Entities;
 
@@ -13,9 +14,10 @@ namespace Workout.Application.Services.Implementation
         {
             _unitOfWork = unitOfWork;
         }
-        public async Task<IEnumerable<Exercise>> GetAllExercises()
+        public async Task<Result> GetAllExercises()
         {
-            return await _unitOfWork.exercises.GetAll();
+            return Result.Success(await _unitOfWork.exercises.GetAll()); 
+                ;
         }
     }
 }
