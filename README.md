@@ -3,6 +3,18 @@
 ## Project Description
 This project involves creating a backend system for a workout tracker application where users can sign up, log in, create workout plans, and track their progress. The system will feature JWT authentication, CRUD operations for workouts, and generate reports on past workouts.
 
+## Why Clean Architecture?
+This project implements Clean Architecture to ensure a clear and modular structure in the code, enhancing scalability and maintainability. The architecture divides the application into independent layers such as Domain, Application, and Infrastructure each with specific responsibilities:
+
+- Separation of Concerns: By keeping responsibilities isolated within each layer, Clean Architecture makes the code easier to read, maintain and understand.
+  
+- Flexibility and Scalability: It allows components (such as databases, authentication providers, etc.) to be changed or enhanced without affecting the core business logic.
+
+- Testability: The architecture enables the business logic layers to remain isolated from infrastructure, making unit and integration testing easier and contributing to a more robust, error resistant software.
+
+- Independence from Infrastructure: Clean Architecture ensures that business logic is not dependent on specific implementation details. For instance, if the database system or authentication provider changes the impact on business logic is minimized.
+
+
 ## Prerequisites
 - .NET 8
 - ASP.NET Core
