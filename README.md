@@ -20,9 +20,7 @@ In this project, the Result Pattern is implemented to handle the flow of operati
 - Clear Success/Failure Handling: It helps distinguish between successful and failed operations explicitly, reducing ambiguity in the flow of logic.
 
 - Standardized Error Reporting: By using a unified pattern for result handling, the project ensures consistent error messages and status codes, making it easier to maintain and debug.
-
-- Chainable Operations: The Result Pattern supports chaining methods, allowing for a clean and readable code structure, where the outcome of one operation can seamlessly lead to the next without nested error handling.
-
+  
 - Improved Testability: It simplifies unit testing by providing a clear path for checking success and failure scenarios, which contributes to more reliable software.
 
 
