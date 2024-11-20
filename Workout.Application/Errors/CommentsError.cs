@@ -11,5 +11,8 @@ namespace Workout.Application.Errors
     {
         public static readonly Error CommentsCannotBeEmpty = new Error(
            "Validation", "Comment cannot be empty");
+
+        public static readonly Error CommentNotFound = new Error(
+            "NotFound", "Workout comment not found");
     }
 }

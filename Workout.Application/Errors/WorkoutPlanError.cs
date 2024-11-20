@@ -13,5 +13,7 @@ namespace Workout.Application.Errors
             "Validation", "Inputs cannot be empty");
         public static readonly Error WorkoutPlanNameAlreadyExists = new Error(
             "Conflict", "Workout plan name already exits");
+        public static readonly Error WorkoutPlanNotFound = new Error(
+            "NotFound", "Workout plan not found");
     }
 }

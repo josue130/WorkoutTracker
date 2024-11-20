@@ -13,5 +13,7 @@ namespace Workout.Application.Errors
             "Validation", "Inputs cannot be empty");
         public static readonly Error InvalidDate = new Error(
             "Validation", "The scheduled date cannot be in the past");
+        public static readonly Error ScheduleNotFound = new Error(
+            "NotFound", "Schedule not found");
     }
 }

@@ -21,5 +21,8 @@ namespace Workout.Application.Errors
 
         public static readonly Error InvalidWeight = new Error(
             "Validation", "Weight must be non-negative.");
+
+        public static readonly Error WorkoutExerciseNotFound = new Error(
+            "NotFound", "Workout exercise not found");
     }
 }
