@@ -57,7 +57,7 @@ namespace Workout.Application.Services.Implementation
                 return Result<string>.Failure(getUserResult.Error);
             }
 
-            Result<WorkoutExercise> deleteResult = await CheckAccess(workoutExerciseId, (Guid)getUserResult.Values);
+            Result<WorkoutExercise> deleteResult = await CheckAccess(workoutExerciseId, getUserResult.Values);
 
             if (deleteResult.IsFailure)
             {
@@ -90,7 +90,7 @@ namespace Workout.Application.Services.Implementation
             {
                 return Result<string>.Failure(getUserResult.Error);
             }
-            Result<WorkoutExercise> updateResult = await CheckAccess(model.Id, (Guid)getUserResult.Values);
+            Result<WorkoutExercise> updateResult = await CheckAccess(model.Id, getUserResult.Values);
             if (updateResult.IsFailure)
             {
                 return Result<string>.Failure(updateResult.Error);
