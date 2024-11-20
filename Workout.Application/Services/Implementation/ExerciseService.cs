@@ -14,10 +14,10 @@ namespace Workout.Application.Services.Implementation
         {
             _unitOfWork = unitOfWork;
         }
-        public async Task<Result> GetAllExercises()
+        public async Task<Result<IEnumerable<Exercise>>> GetAllExercises()
         {
-            return Result.Success(await _unitOfWork.exercises.GetAll()); 
-                ;
+            return Result<IEnumerable<Exercise>>.Success(await _unitOfWork.exercises.GetAll()); 
+                
         }
     }
 }

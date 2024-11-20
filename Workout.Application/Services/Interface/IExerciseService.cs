@@ -10,6 +10,6 @@ namespace Workout.Application.Services.Interface
 {
     public interface IExerciseService 
     {
-        Task<Result> GetAllExercises();
+        Task<Result<IEnumerable<Exercise>>> GetAllExercises();
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Workout.Application.Common.Dto;
+using Workout.Application.Common.Result;
 using Workout.Application.Services.Implementation;
 using Workout.Application.Services.Interface;
 

@@ -11,10 +11,10 @@ namespace Workout.Application.Services.Interface
 {
     public interface IWorkoutExerciseService
     {
-        Task<Result> GetWorkoutExerciseById(Guid workoutExerciseId, ClaimsPrincipal user);
-        Task<Result> AddWorkoutExercise(WorkoutExerciseDto model, ClaimsPrincipal user);
-        Task<Result> UpdateWorkoutExercise(WorkoutExerciseDto model, ClaimsPrincipal user);
-        Task<Result> DeleteWorkoutExercise(Guid workoutExerciseId, ClaimsPrincipal user);
+        Task<Result<IEnumerable<WorkoutExerciseDto>>> GetWorkoutExerciseById(Guid workoutExerciseId, ClaimsPrincipal user);
+        Task<Result<string>> AddWorkoutExercise(WorkoutExerciseDto model, ClaimsPrincipal user);
+        Task<Result<string>> UpdateWorkoutExercise(WorkoutExerciseDto model, ClaimsPrincipal user);
+        Task<Result<string>> DeleteWorkoutExercise(Guid workoutExerciseId, ClaimsPrincipal user);
 
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Workout.Application.Common.Dto;
@@ -10,7 +11,8 @@ namespace Workout.Application.Services.Interface
 {
     public interface IAuthService
     {
-        Task<Result> Login(LoginRequestDto loginRequest);
-        Task<Result> Register(RegisterRequestDto request);
+        Task<Result<LoginResponseDto>> Login(LoginRequestDto loginRequest);
+        Task<Result<string>> Register(RegisterRequestDto request);
+        Result<Guid> GetUserId(ClaimsPrincipal user);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 using Workout.Application.Common.Dto;
 using Workout.Application.Common.Interfaces;
 using Workout.Application.Common.Result;
@@ -23,12 +24,23 @@ namespace Workout.Application.Services.Implementation
             _jwtTokenGenerator = jwtTokenGenerator;
 
         }
-        public async Task<Result> Login(LoginRequestDto loginRequest)
+
+        public Result<Guid> GetUserId(ClaimsPrincipal user)
+        {
+            var userIdString = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out Guid userId))
+            {
+                return Result<Guid>.Failure(JWTError.JwtTokenInvalid);
+            }
+            return Result<Guid>.Success(userId);
+        }
+
+        public async Task<Result<LoginResponseDto>> Login(LoginRequestDto loginRequest)
         {
             User user = await _unitOfWork.auth.Get(u => u.UserName.ToLower() == loginRequest.UserName.ToLower());
             if (user == null)
             {
-                return Result.Failure(AuthError.UserNameNotExist);
+                return Result<LoginResponseDto>.Failure(AuthError.UserNameNotExist);
             }
             UserDto applicationUser = new UserDto
             {
@@ -39,7 +51,7 @@ namespace Workout.Application.Services.Implementation
 
             if (result != PasswordVerificationResult.Success)
             {
-                return Result.Failure(AuthError.IncorrectPassword);
+                return Result<LoginResponseDto>.Failure(AuthError.IncorrectPassword);
             }
 
             var token = _jwtTokenGenerator.GenerateToken(user);
@@ -50,21 +62,21 @@ namespace Workout.Application.Services.Implementation
                 Token = token
             };
 
-            return Result.Success(loginResponseDto);
+            return Result<LoginResponseDto>.Success(loginResponseDto);
         }
 
-        public async Task<Result> Register(RegisterRequestDto request)
+        public async Task<Result<string>> Register(RegisterRequestDto request)
         {
             if (string.IsNullOrWhiteSpace(request.FullName) 
                 || string.IsNullOrWhiteSpace(request.UserName)
                 || string.IsNullOrWhiteSpace(request.Password))
             {
-                return Result.Failure(AuthError.InvalidInputs);
+                return Result<string>.Failure(AuthError.InvalidInputs);
             }
 
             if (EmailObject.Create(request.Email) == null)
             {
-                return Result.Failure(AuthError.InvalidEmailFormat);
+                return Result<string>.Failure(AuthError.InvalidEmailFormat);
             }
 
             var applicationUser = new UserDto()
@@ -76,7 +88,7 @@ namespace Workout.Application.Services.Implementation
             var user = await _unitOfWork.auth.Get(u => u.UserName.ToLower() == request.UserName.ToLower());
             if (user != null)
             {
-                return Result.Failure(AuthError.UserNameAlreadyExits);
+                return Result<string>.Failure(AuthError.UserNameAlreadyExits);
             }
 
             var hashPassword = _passwordHasher.HashPassword(applicationUser, request.Password);
@@ -86,10 +98,10 @@ namespace Workout.Application.Services.Implementation
             await _unitOfWork.auth.Add(newUser);
             await _unitOfWork.Save();
 
-            return Result.Success("User registered successfully");
+            return Result<string>.Success("User registered successfully");
 
         }
-        
-        
+
+       
     }
 }

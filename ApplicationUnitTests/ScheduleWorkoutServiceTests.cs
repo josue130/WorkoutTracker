@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Workout.Application.Common.Dto;
 using Workout.Application.Common.Interfaces;
+using Workout.Application.Common.Result;
 using Workout.Application.Errors;
 using Workout.Application.Services.Implementation;
 using Workout.Application.Services.Interface;
@@ -20,13 +21,18 @@ namespace ApplicationUnitTests
         
         private readonly Mock<IUnitOfWork> _unitOfWorkMock;
         private readonly Mock<IMapper> _mapperMock;
+        private Mock<IAuthService> _authServiceMock;
+        private Mock<IWorkoutPlanService> _workoutPlanServiceMock;
         private readonly ScheduleWorkoutService _scheduleWorkoutService;
 
         public ScheduleWorkoutServiceTests()
         {
             _unitOfWorkMock = new Mock<IUnitOfWork>();
             _mapperMock = new Mock<IMapper>();
-            _scheduleWorkoutService = new ScheduleWorkoutService(_unitOfWorkMock.Object, _mapperMock.Object);
+            _authServiceMock = new Mock<IAuthService>();
+            _workoutPlanServiceMock = new Mock<IWorkoutPlanService>();
+            _scheduleWorkoutService = new ScheduleWorkoutService(_unitOfWorkMock.Object, _mapperMock.Object,
+                _authServiceMock.Object, _workoutPlanServiceMock.Object);
         }
 
         private ClaimsPrincipal CreateUserClaimsPrincipal(Guid userId)
@@ -44,8 +50,13 @@ namespace ApplicationUnitTests
             var userId = Guid.NewGuid();
             var model = new ScheduleWorkoutDto { WorkoutId = Guid.NewGuid(), ScheduledDate = DateTime.Today.AddDays(-1) };
             var user = CreateUserClaimsPrincipal(userId);
-            _unitOfWorkMock.Setup(u => u.workoutPlans.Get(It.IsAny<Expression<Func<WorkoutPlan, bool>>>()))
-                .ReturnsAsync(new WorkoutPlan(model.WorkoutId, "", "", userId));
+            var workoutPlan = new WorkoutPlan(model.WorkoutId, "", "", userId);
+            _authServiceMock.Setup(s => s.GetUserId(user))
+                .Returns(Result<Guid>.Success(userId));
+
+
+            _workoutPlanServiceMock.Setup(u => u.CheckAccess(model.WorkoutId, userId))
+                .ReturnsAsync(Result<WorkoutPlan>.Success(workoutPlan));
             // Act
             var result = await _scheduleWorkoutService.SetWorkoutSchedule(model, user);
 
@@ -61,9 +72,12 @@ namespace ApplicationUnitTests
             var userId = Guid.NewGuid();
             var model = new ScheduleWorkoutDto { WorkoutId = Guid.NewGuid(), ScheduledDate = DateTime.Today.AddDays(1) };
             var user = CreateUserClaimsPrincipal(userId);
-
-            _unitOfWorkMock.Setup(u => u.workoutPlans.Get(It.IsAny<Expression<Func<WorkoutPlan, bool>>>()))
-                .ReturnsAsync(new WorkoutPlan ( model.WorkoutId, "", "", userId));
+            var workoutPlan = new WorkoutPlan(model.WorkoutId, "", "", userId);
+            _authServiceMock.Setup(s => s.GetUserId(user))
+                .Returns(Result<Guid>.Success(userId));
+            _workoutPlanServiceMock.Setup(u => u.CheckAccess(model.WorkoutId, userId))
+                .ReturnsAsync(Result<WorkoutPlan>.Success(workoutPlan));
+       
 
             _unitOfWorkMock.Setup(u => u.scheduleWorkouts.Add(It.IsAny<ScheduleWorkout>()))
                            .Returns(Task.CompletedTask);
@@ -81,17 +95,20 @@ namespace ApplicationUnitTests
         public async Task DeleteScheduledWorkout_WithUnauthorizedUser_ShouldThrowUnauthorizedAccessException()
         {
             // Arrange
+            var userId = Guid.NewGuid();
             var scheduleWorkoutId = Guid.NewGuid();
-            var user = CreateUserClaimsPrincipal(Guid.NewGuid());
-
+            var user = CreateUserClaimsPrincipal(userId);
+            _authServiceMock.Setup(s => s.GetUserId(user))
+                .Returns(Result<Guid>.Success(userId));
             _unitOfWorkMock.Setup(u => u.scheduleWorkouts.Get(It.IsAny<Expression<Func<ScheduleWorkout, bool>>>()))
                 .ReturnsAsync((ScheduleWorkout)null);
 
             // Act
-            Func<Task> act = async () => await _scheduleWorkoutService.DeleteScheduledWorkout(scheduleWorkoutId, user);
+            var result =  await _scheduleWorkoutService.DeleteScheduledWorkout(scheduleWorkoutId, user);
 
             // Assert
-            await act.Should().ThrowAsync<UnauthorizedAccessException>();
+            result.IsFailure.Should().BeTrue();
+            result.Error.Should().Be(ScheduleWorkoutError.ScheduleNotFound);
         }
 
         [Fact]
@@ -105,7 +122,8 @@ namespace ApplicationUnitTests
 
             _unitOfWorkMock.Setup(u => u.scheduleWorkouts.Get(It.IsAny<Expression<Func<ScheduleWorkout, bool>>>()))
                 .ReturnsAsync(scheduleWorkout);
-
+            _authServiceMock.Setup(s => s.GetUserId(user))
+                .Returns(Result<Guid>.Success(userId));
             // Act
             var result = await _scheduleWorkoutService.DeleteScheduledWorkout(scheduleWorkoutId, user);
 
@@ -124,7 +142,8 @@ namespace ApplicationUnitTests
         {
             ScheduleWorkout.Create(DateTime.Today.AddDays(1), Guid.NewGuid())
         };
-
+            _authServiceMock.Setup(s => s.GetUserId(user))
+                .Returns(Result<Guid>.Success(userId));
             _unitOfWorkMock.Setup(u => u.scheduleWorkouts.GetScheduleWorkouts(userId))
                 .ReturnsAsync(scheduleWorkouts);
 
@@ -136,7 +155,7 @@ namespace ApplicationUnitTests
 
             // Assert
             result.IsSuccess.Should().BeTrue();
-            result.Values.Should().Be(scheduleWorkoutsDto);
+            result.Values.Should().BeEquivalentTo(scheduleWorkoutsDto);
         }
 
         [Fact]
@@ -146,9 +165,13 @@ namespace ApplicationUnitTests
             var userId = Guid.NewGuid();
             var model = new ScheduleWorkoutDto { Id = Guid.NewGuid(), WorkoutId = Guid.NewGuid(), ScheduledDate = DateTime.Today.AddDays(-1) };
             var user = CreateUserClaimsPrincipal(userId);
+            var scheduleWorkout = new ScheduleWorkout(Guid.NewGuid(),DateTime.Today.AddDays(1),model.WorkoutId);
 
-            _unitOfWorkMock.Setup(u => u.workoutPlans.Get(It.IsAny<Expression<Func<WorkoutPlan, bool>>>()))
-                .ReturnsAsync(new WorkoutPlan(model.WorkoutId, "", "", userId));
+            _unitOfWorkMock.Setup(u => u.scheduleWorkouts.Get(It.IsAny<Expression<Func<ScheduleWorkout, bool>>>()))
+                .ReturnsAsync(scheduleWorkout);
+            _authServiceMock.Setup(s => s.GetUserId(user))
+                .Returns(Result<Guid>.Success(userId));
+
 
             // Act
             var result = await _scheduleWorkoutService.UpdateScheduledWorkout(model, user);

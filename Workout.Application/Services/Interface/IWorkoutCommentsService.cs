@@ -12,9 +12,9 @@ namespace Workout.Application.Services.Interface
 {
     public interface IWorkoutCommentsService
     {
-        Task<Result> GetWorkoutCommentsByWorkoutId(Guid workoutId, ClaimsPrincipal user);
-        Task<Result> AddWorkoutComment(WorkoutCommentsDto model,ClaimsPrincipal user);
-        Task<Result> UpdateWorkoutComment(WorkoutCommentsDto model, ClaimsPrincipal user);
-        Task<Result> DeleteWorkoutComment(Guid workoutCommentId, ClaimsPrincipal user);
+        Task<Result<IEnumerable<WorkoutCommentsDto>>> GetWorkoutCommentsByWorkoutId(Guid workoutId, ClaimsPrincipal user);
+        Task<Result<string>> AddWorkoutComment(WorkoutCommentsDto model,ClaimsPrincipal user);
+        Task<Result<string>> UpdateWorkoutComment(WorkoutCommentsDto model, ClaimsPrincipal user);
+        Task<Result<string>> DeleteWorkoutComment(Guid workoutCommentId, ClaimsPrincipal user);
     }
 }

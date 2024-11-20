@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Workout.Application.Common.Dto;
 using Workout.Application.Common.Interfaces;
+using Workout.Application.Common.Result;
 using Workout.Application.Errors;
 using Workout.Application.Services.Implementation;
 using Workout.Application.Services.Interface;
@@ -20,6 +21,8 @@ namespace ApplicationUnitTests
     {
         private Mock<IUnitOfWork> _unitOfWorkMock;
         private Mock<IMapper> _mapperMock;
+        private Mock<IAuthService> _authServiceMock;
+        private Mock<IWorkoutPlanService> _workoutPlanServiceMock;
         private WorkoutExerciseService _workoutExerciseService;
 
         
@@ -27,7 +30,10 @@ namespace ApplicationUnitTests
         {
             _unitOfWorkMock = new Mock<IUnitOfWork>();
             _mapperMock = new Mock<IMapper>();
-            _workoutExerciseService = new WorkoutExerciseService(_unitOfWorkMock.Object, _mapperMock.Object);
+            _authServiceMock = new Mock<IAuthService>();
+            _workoutPlanServiceMock = new Mock<IWorkoutPlanService>();
+            _workoutExerciseService = new WorkoutExerciseService(_unitOfWorkMock.Object, _mapperMock.Object,
+                _authServiceMock.Object, _workoutPlanServiceMock.Object);
         }
 
         private ClaimsPrincipal CreateUserClaimsPrincipal(Guid userId)
@@ -45,10 +51,13 @@ namespace ApplicationUnitTests
             var userId = Guid.NewGuid();
             var model = new WorkoutExerciseDto { WorkoutId = Guid.NewGuid(), Sets = 0, Repetitions = 10, Weight = 50 };
             var user = CreateUserClaimsPrincipal(userId);
+            var workoutPlan = new WorkoutPlan(model.WorkoutId, "", "", userId);
+            _authServiceMock.Setup(s => s.GetUserId(user))
+                .Returns(Result<Guid>.Success(userId));
 
 
-            _unitOfWorkMock.Setup(u => u.workoutPlans.Get(It.IsAny<Expression<Func<WorkoutPlan, bool>>>()))
-                .ReturnsAsync(new WorkoutPlan(model.WorkoutId, "", "", userId));
+            _workoutPlanServiceMock.Setup(u => u.CheckAccess(model.WorkoutId, userId))
+                .ReturnsAsync(Result<WorkoutPlan>.Success(workoutPlan));
 
             // Act
             var result = await _workoutExerciseService.AddWorkoutExercise(model, user);
@@ -65,9 +74,14 @@ namespace ApplicationUnitTests
             var userId = Guid.NewGuid();
             var model = new WorkoutExerciseDto { ExerciseId = 2, WorkoutId = Guid.NewGuid(), Sets = 3, Repetitions = 10, Weight = 50 };
             var user = CreateUserClaimsPrincipal(userId);
+            var workoutPlan = new WorkoutPlan(model.WorkoutId, "", "", userId);
 
-            _unitOfWorkMock.Setup(u => u.workoutPlans.Get(It.IsAny<Expression<Func<WorkoutPlan, bool>>>()))
-                .ReturnsAsync(new WorkoutPlan ( model.WorkoutId,"","",  userId ));
+            _authServiceMock.Setup(s => s.GetUserId(user))
+                .Returns(Result<Guid>.Success(userId));
+
+
+            _workoutPlanServiceMock.Setup(u => u.CheckAccess(model.WorkoutId, userId))
+                .ReturnsAsync(Result<WorkoutPlan>.Success(workoutPlan));
             _unitOfWorkMock.Setup(u => u.workoutExercises.Add(It.IsAny<WorkoutExercise>()))
                            .Returns(Task.CompletedTask);
 
@@ -84,17 +98,21 @@ namespace ApplicationUnitTests
         public async Task DeleteWorkoutExercise_WithUnauthorizedUser_ShouldThrowUnauthorizedAccessException()
         {
             // Arrange
+            var userId = Guid.NewGuid();
             var workoutExerciseId = Guid.NewGuid();
             var user = CreateUserClaimsPrincipal(Guid.NewGuid());
+            _authServiceMock.Setup(s => s.GetUserId(user))
+                .Returns(Result<Guid>.Success(userId));
 
             _unitOfWorkMock.Setup(u => u.workoutExercises.Get(It.IsAny<Expression<Func<WorkoutExercise, bool>>>()))
                 .ReturnsAsync((WorkoutExercise)null);
 
             // Act
-            Func<Task> act = async () => await _workoutExerciseService.DeleteWorkoutExercise(workoutExerciseId, user);
+            var result = await _workoutExerciseService.DeleteWorkoutExercise(workoutExerciseId, user);
 
             // Assert
-            await act.Should().ThrowAsync<UnauthorizedAccessException>();
+            result.IsFailure.Should().BeTrue();
+            result.Error.Should().Be(WorkoutExerciseError.WorkoutExerciseNotFound);
         }
 
         [Fact]
@@ -105,6 +123,9 @@ namespace ApplicationUnitTests
             var workoutExerciseId = Guid.NewGuid();
             var user = CreateUserClaimsPrincipal(userId);
             var workoutExercise = WorkoutExercise.Create(2, Guid.NewGuid(), 3, 10, 50);
+
+            _authServiceMock.Setup(s => s.GetUserId(user))
+                .Returns(Result<Guid>.Success(userId));
 
             _unitOfWorkMock.Setup(u => u.workoutExercises.Get(It.IsAny<Expression<Func<WorkoutExercise, bool>>>()))
                 .ReturnsAsync(workoutExercise);
@@ -128,7 +149,8 @@ namespace ApplicationUnitTests
         {
             WorkoutExercise.Create(2, workoutId, 3, 10, 50)
         };
-
+            _authServiceMock.Setup(s => s.GetUserId(user))
+                .Returns(Result<Guid>.Success(userId));
             _unitOfWorkMock.Setup(u => u.workoutExercises.GetWorkoutExercises(workoutId, userId))
                 .ReturnsAsync(workoutExercises);
 
@@ -140,7 +162,7 @@ namespace ApplicationUnitTests
 
             // Assert
             result.IsSuccess.Should().BeTrue();
-            result.Values.Should().Be(workoutExerciseDtos);
+            result.Values.Should().BeEquivalentTo(workoutExerciseDtos);
         }
     }
 }

@@ -12,12 +12,14 @@ namespace Workout.Application.Services.Interface
 {
     public interface IWorkoutPlanService
     {
-        Task<Result> AddWorkoutPlan(WorkoutPlanDto model, ClaimsPrincipal user);
-        Task<Result> UpdateWorkoutPlan(WorkoutPlanDto model, ClaimsPrincipal user);
-        Task<Result> DeleteWorkoutPlan(Guid workoutPlanId, ClaimsPrincipal user);
-        Task<Result> GetByWorkouPlanId(Guid workoutPlanId, ClaimsPrincipal user);
-        Task<Result> GenerateReport(ClaimsPrincipal user);
-        Task<Result> GetWorkoutsbyUserId(ClaimsPrincipal user);
+        Task<Result<string>> AddWorkoutPlan(WorkoutPlanDto model, ClaimsPrincipal user);
+        Task<Result<string>> UpdateWorkoutPlan(WorkoutPlanDto model, ClaimsPrincipal user);
+        Task<Result<string>> DeleteWorkoutPlan(Guid workoutPlanId, ClaimsPrincipal user);
+        Task<Result<WorkoutPlanDto>> GetByWorkouPlanId(Guid workoutPlanId, ClaimsPrincipal user);
+        Task<Result<IEnumerable<WorkoutPlanResponseDto>>> GenerateReport(ClaimsPrincipal user);
+        Task<Result<IEnumerable<WorkoutPlanResponseDto>>> GetWorkoutsbyUserId(ClaimsPrincipal user);
+        Task<Result<WorkoutPlan>> CheckAccess(Guid? workoutPlanId, Guid userId);
+        Task<WorkoutPlan?> CheckName(string name, Guid userId);
 
 
     }

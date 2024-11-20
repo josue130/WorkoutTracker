@@ -13,82 +13,104 @@ namespace Workout.Application.Services.Implementation
     {
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
-        public WorkoutExerciseService(IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly IAuthService _authService;
+        private readonly IWorkoutPlanService _workoutPlanService;
+        public WorkoutExerciseService(IUnitOfWork unitOfWork, IMapper mapper, IAuthService authService, IWorkoutPlanService workoutPlanService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _authService = authService;
+            _workoutPlanService = workoutPlanService;
         }
-        public async Task<Result> AddWorkoutExercise(WorkoutExerciseDto model, ClaimsPrincipal user)
+        public async Task<Result<string>> AddWorkoutExercise(WorkoutExerciseDto model, ClaimsPrincipal user)
         {
-            Guid userId = CheckUserId(user);
-            await CheckAccessToWorkout(model.WorkoutId, userId);
+            Result<Guid> getUserResult = _authService.GetUserId(user);
+            if (getUserResult.IsFailure)
+            {
+                return Result<string>.Failure(getUserResult.Error);
+            }
 
-            if (model.Sets <= 0) return Result.Failure(WorkoutExerciseError.InvalidSets);
-            if (model.Repetitions <= 0) return Result.Failure(WorkoutExerciseError.InvalidRepetitions);
-            if (model.Weight < 0) return Result.Failure(WorkoutExerciseError.InvalidWeight);
+            Result<WorkoutPlan> accessResult = await _workoutPlanService.CheckAccess(model.WorkoutId, getUserResult.Values);
+
+            if (accessResult.IsFailure)
+            {
+                return Result<string>.Failure(accessResult.Error);
+            }
+
+            if (model.Sets <= 0) return Result<string>.Failure(WorkoutExerciseError.InvalidSets);
+            if (model.Repetitions <= 0) return Result<string>.Failure(WorkoutExerciseError.InvalidRepetitions);
+            if (model.Weight < 0) return Result<string>.Failure(WorkoutExerciseError.InvalidWeight);
 
             WorkoutExercise workoutExercise = WorkoutExercise.Create(model.ExerciseId, model.WorkoutId,model.Sets, model.Repetitions,model.Weight);
             await _unitOfWork.workoutExercises.Add(workoutExercise);
             await _unitOfWork.Save();
 
-            return Result.Success("Exercise added successfully.");
+            return Result<string>.Success("Exercise added successfully.");
 
         }
 
-        public async Task<Result> DeleteWorkoutExercise(Guid workoutExerciseId, ClaimsPrincipal user)
+        public async Task<Result<string>> DeleteWorkoutExercise(Guid workoutExerciseId, ClaimsPrincipal user)
         {
-            Guid userId = CheckUserId(user);
-            WorkoutExercise workoutExercise = await CheckAccess(workoutExerciseId, userId);
-            _unitOfWork.workoutExercises.Remove(workoutExercise);
+            Result<Guid> getUserResult = _authService.GetUserId(user);
+            if (getUserResult.IsFailure)
+            {
+                return Result<string>.Failure(getUserResult.Error);
+            }
+
+            Result<WorkoutExercise> deleteResult = await CheckAccess(workoutExerciseId, (Guid)getUserResult.Values);
+
+            if (deleteResult.IsFailure)
+            {
+                return Result<string>.Failure(deleteResult.Error);
+            }
+            _unitOfWork.workoutExercises.Remove(deleteResult.Values);
             await _unitOfWork.Save();
 
-            return Result.Success("Workout exercise deleted successfully");
+            return Result<string>.Success("Workout exercise deleted successfully");
         }
 
-        public async Task<Result> GetWorkoutExerciseById(Guid workoutId, ClaimsPrincipal user)
+        public async Task<Result<IEnumerable<WorkoutExerciseDto>>> GetWorkoutExerciseById(Guid workoutId, ClaimsPrincipal user)
         {
-            Guid userId = CheckUserId(user);
-            IEnumerable<WorkoutExercise> workoutExercise = await _unitOfWork.workoutExercises.GetWorkoutExercises(workoutId, userId);
+            Result<Guid> getUserResult = _authService.GetUserId(user);
+
+            if (getUserResult.IsFailure)
+            {
+                return Result<IEnumerable<WorkoutExerciseDto>>.Failure(getUserResult.Error);
+            }
+            IEnumerable<WorkoutExercise> workoutExercise = await _unitOfWork.workoutExercises.GetWorkoutExercises(workoutId, getUserResult.Values);
             IEnumerable<WorkoutExerciseDto> workoutExerciseDto = _mapper.Map<IEnumerable<WorkoutExerciseDto>>(workoutExercise);
-            return Result.Success(workoutExerciseDto);
+            return Result<IEnumerable<WorkoutExerciseDto>>.Success(workoutExerciseDto);
 
         }
 
-        public async Task<Result> UpdateWorkoutExercise(WorkoutExerciseDto model, ClaimsPrincipal user)
+        public async Task<Result<string>> UpdateWorkoutExercise(WorkoutExerciseDto model, ClaimsPrincipal user)
         {
-            Guid userId = CheckUserId(user);
-            await CheckAccess(model.Id, userId);
+            Result<Guid> getUserResult = _authService.GetUserId(user);
+            if (getUserResult.IsFailure)
+            {
+                return Result<string>.Failure(getUserResult.Error);
+            }
+            Result<WorkoutExercise> updateResult = await CheckAccess(model.Id, (Guid)getUserResult.Values);
+            if (updateResult.IsFailure)
+            {
+                return Result<string>.Failure(updateResult.Error);
+            }
+
             WorkoutExercise workoutExercise = WorkoutExercise.Update((Guid)model.Id,model.ExerciseId, model.WorkoutId, model.Sets, model.Repetitions, model.Weight);
             _unitOfWork.workoutExercises.Update(workoutExercise);
             await _unitOfWork.Save();
-            return Result.Success("Workout exercise updated successfully");
+            return Result<string>.Success("Workout exercise updated successfully");
         }
-        private async Task CheckAccessToWorkout(Guid? workoutPlanId, Guid userId)
-        {
-            WorkoutPlan workoutPlan = await _unitOfWork.workoutPlans.Get(wp => wp.Id == workoutPlanId && wp.UserId == userId);
-            if (workoutPlan == null)
-            {
-                throw new UnauthorizedAccessException();
-            }
-  
-        }
-        private async Task<WorkoutExercise> CheckAccess(Guid? workoutExerciseId, Guid userId)
+
+        private async Task<Result<WorkoutExercise>> CheckAccess(Guid? workoutExerciseId, Guid userId)
         {
             WorkoutExercise workoutExercise = await _unitOfWork.workoutExercises.Get(wp => wp.Id == workoutExerciseId && wp.Workout.UserId == userId);
             if (workoutExercise == null)
             {
-                throw new UnauthorizedAccessException();
+                return Result<WorkoutExercise>.Failure(WorkoutExerciseError.WorkoutExerciseNotFound);
             }
-            return workoutExercise;
+            return Result<WorkoutExercise>.Success(workoutExercise);
         }
-        private Guid CheckUserId(ClaimsPrincipal user)
-        {
-            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userId))
-            {
-                throw new UnauthorizedAccessException();
-            }
-            return Guid.Parse(userId);
-        }
+        
     }
 }
